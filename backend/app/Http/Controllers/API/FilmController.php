@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Film;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class FilmController extends Controller
 {
@@ -21,12 +22,17 @@ class FilmController extends Controller
             'title'        => 'required|string|max:255',
             'synopsis'     => 'nullable|string',
             'duration_min' => 'nullable|integer|min:1',
-            'poster'       => 'nullable|string|max:255',
+            'poster'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'actors'       => 'nullable|string',
             'release_date' => 'nullable|date',
             'status'       => 'required|in:showing,coming_soon',
             'id_category'  => 'nullable|exists:categories,id_category',
         ]);
+
+        if ($request->hasFile('poster')) {
+            $path = $request->file('poster')->store('posters', 'public');
+            $validated['poster'] = $path;
+        }
 
         $film = Film::create($validated);
 
@@ -44,12 +50,20 @@ class FilmController extends Controller
             'title'        => 'required|string|max:255',
             'synopsis'     => 'nullable|string',
             'duration_min' => 'nullable|integer|min:1',
-            'poster'       => 'nullable|string|max:255',
+            'poster'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'actors'       => 'nullable|string',
             'release_date' => 'nullable|date',
             'status'       => 'required|in:showing,coming_soon',
             'id_category'  => 'nullable|exists:categories,id_category',
         ]);
+
+        if ($request->hasFile('poster')) {
+            if ($film->poster) {
+                Storage::disk('public')->delete($film->poster);
+            }
+            $path = $request->file('poster')->store('posters', 'public');
+            $validated['poster'] = $path;
+        }
 
         $film->update($validated);
 

@@ -1,5 +1,12 @@
+import AdminLayout from '../../components/AdminLayout'
+
 function Dashboard() {
-    return <h1>Dashboard Admin — Baobab Cinéma</h1>
+    return (
+        <AdminLayout>
+            <h1>Dashboard</h1>
+            <p>Bienvenue dans le back-office de Baobab Cinéma.</p>
+        </AdminLayout>
+    )
 }
 
 export default Dashboard
