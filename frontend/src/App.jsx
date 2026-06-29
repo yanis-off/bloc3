@@ -14,6 +14,7 @@ import ScreeningsList from './pages/admin/Screenings/ScreeningsList'
 import ScreeningCreate from './pages/admin/Screenings/ScreeningCreate'
 import ScreeningEdit from './pages/admin/screenings/ScreeningEdit'
 import BookingsList from './pages/admin/BookingsList'
+import FilmShow from './pages/admin/films/FilmShow'
 
 function App() {
   return (
@@ -65,6 +66,10 @@ function App() {
 
         <Route path="/admin/bookings" element={
           <PrivateRoute adminOnly={true}><BookingsList /></PrivateRoute>
+        } />
+
+        <Route path="/admin/films/:id" element={
+          <PrivateRoute adminOnly={true}><FilmShow /></PrivateRoute>
         } />
 
       </Routes>

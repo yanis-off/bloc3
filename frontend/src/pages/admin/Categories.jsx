@@ -1,74 +1,101 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Plus } from 'lucide-react'
-import {
-    Table, TableBody, TableCell,
-    TableHead, TableHeader, TableRow,
-} from '@/components/ui/table'
 import AdminLayout from '../../components/AdminLayout'
 import api from '../../api/axios'
 
-function FilmsList() {
-    const [films, setFilms] = useState([])
+function Categories() {
+    const [categories, setCategories] = useState([])
+    const [name, setName] = useState('')
+    const [editId, setEditId] = useState(null)
+    const [error, setError] = useState('')
+
+    const fetchCategories = async () => {
+        const res = await api.get('/categories')
+        setCategories(res.data)
+    }
 
     useEffect(() => {
         const load = async () => {
-            const res = await api.get('/films')
-            setFilms(res.data)
+            const res = await api.get('/categories')
+            setCategories(res.data)
         }
         load()
     }, [])
 
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        setError('')
+        try {
+            if (editId) {
+                await api.put(`/categories/${editId}`, { name })
+            } else {
+                await api.post('/categories', { name })
+            }
+            setName('')
+            setEditId(null)
+            fetchCategories()
+        } catch (err) {
+            setError(err.response?.data?.message || 'Erreur.')
+        }
+    }
+
+    const handleEdit = (cat) => {
+        setEditId(cat.id_category)
+        setName(cat.name)
+    }
+
     const handleDelete = async (id) => {
-        if (!confirm('Supprimer ce film ?')) return
-        await api.delete(`/films/${id}`)
-        setFilms(films.filter(f => f.id_film !== id))
+        if (!confirm('Supprimer cette catégorie ?')) return
+        await api.delete(`/categories/${id}`)
+        fetchCategories()
     }
 
     return (
         <AdminLayout>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h1 style={{ fontFamily: '"Archivo Black", sans-serif', color: 'white', fontSize: '1.75rem' }}>Films</h1>
-                <Link to="/admin/films/create" style={{ background: '#17286D', color: 'white', padding: '0.6rem 1.2rem', borderRadius: '8px', textDecoration: 'none', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Plus size={16} /> Ajouter un film
-                </Link>
-            </div>
-
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className="w-[80px]">Affiche</TableHead>
-                        <TableHead>Titre</TableHead>
-                        <TableHead>Catégorie</TableHead>
-                        <TableHead>Durée</TableHead>
-                        <TableHead>Statut</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {films.map(film => (
-                        <TableRow key={film.id_film}>
-                            <TableCell>
-                                {film.poster ? (
-                                    <img src={`http://127.0.0.1:8000/storage/${film.poster}`} alt={film.title} style={{ width: '44px', height: '64px', objectFit: 'cover', borderRadius: '6px' }} />
-                                ) : (
-                                    <div style={{ width: '44px', height: '64px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9aafd4', fontSize: '0.65rem' }}>N/A</div>
-                                )}
-                            </TableCell>
-                            <TableCell className="font-medium">{film.title}</TableCell>
-                            <TableCell>{film.category?.name || '—'}</TableCell>
-                            <TableCell>{film.duration_min ? `${film.duration_min} min` : '—'}</TableCell>
-                            <TableCell>{film.status === 'showing' ? "À l'affiche" : 'À venir'}</TableCell>
-                            <TableCell className="text-right">
-                                <Link to={`/admin/films/${film.id_film}/edit`} style={{ marginRight: '1rem', color: '#ABC0E0', fontSize: '0.85rem' }}>Modifier</Link>
-                                <button onClick={() => handleDelete(film.id_film)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}>Supprimer</button>
-                            </TableCell>
-                        </TableRow>
+            <h1 className="text-3xl font-black" style={{ fontFamily: 'var(--font-title)' }}>Catégories</h1>
+            <form onSubmit={handleSubmit} style={{ marginBottom: '2rem', display: 'flex', gap: '1rem' }}>
+                <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Nom de la catégorie"
+                    required
+                    style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', flex: 1 }}
+                />
+                <button type="submit" style={{ padding: '0.5rem 1rem', background: '#17286D', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                    {editId ? 'Modifier' : 'Ajouter'}
+                </button>
+                {editId && (
+                    <button type="button" onClick={() => { setEditId(null); setName('') }} style={{ padding: '0.5rem 1rem', background: '#666', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                        Annuler
+                    </button>
+                )}
+            </form>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                    <tr style={{ background: '#f5f5f5' }}>
+                        <th style={{ padding: '0.75rem', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Nom</th>
+                        <th style={{ padding: '0.75rem', textAlign: 'right', borderBottom: '1px solid #ddd' }}>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {categories.map(cat => (
+                        <tr key={cat.id_category} style={{ borderBottom: '1px solid #eee' }}>
+                            <td style={{ padding: '0.75rem' }}>{cat.name}</td>
+                            <td style={{ padding: '0.75rem', textAlign: 'right', display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                <button onClick={() => handleEdit(cat)} style={{ padding: '0.3rem 0.8rem', background: '#0A0F2C', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                                    Modifier
+                                </button>
+                                <button onClick={() => handleDelete(cat.id_category)} style={{ padding: '0.3rem 0.8rem', background: '#c0392b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                                    Supprimer
+                                </button>
+                            </td>
+                        </tr>
                     ))}
-                </TableBody>
-            </Table>
+                </tbody>
+            </table>
         </AdminLayout>
     )
 }
 
-export default FilmsList
+export default Categories
