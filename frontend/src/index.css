@@ -19,22 +19,6 @@
     --font-body: 'Inter', sans-serif;
 }
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: var(--font-body);
-}
-
-body {
-    background-color: #F9F9F9;
-    color: #0A0F2C;
-}
-
-body.dark {
-    background-color: #0A0F2C;
-    color: #DDE6F0;
-}
 
 @theme inline {
     --font-heading: var(--font-sans);
@@ -150,12 +134,19 @@ body.dark {
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
-    }
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
   body {
-    @apply bg-background text-foreground;
-    }
-  html {
-    @apply font-sans;
-    }
+    font-family: var(--font-body);
+    background-color: #F9F9F9;
+    color: #0A0F2C;
+  }
+
+  body.dark {
+    background-color: #0A0F2C;
+    color: #DDE6F0;
+  }
 }

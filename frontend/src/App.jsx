@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Login from './pages/public/Login'
 import Register from './pages/public/Register'
 import Home from './pages/public/Home'
+import Accueil from './user/pages/public/Accueil'
 import Films from './pages/public/Films'
 import Dashboard from './pages/admin/Dashboard'
 import Categories from './pages/admin/Categories'
@@ -21,6 +22,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+
+        <Route path="/accueil-preview" element={<Accueil />} />
 
         <Route path="/login" element={<Login />} />
 
