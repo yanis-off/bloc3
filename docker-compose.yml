@@ -40,10 +40,10 @@ services:
     image: mysql:8.0
     container_name: cinema-db
     ports:
-      - "3306:3306"
+      - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: baobab_cinema # Utilise exactement ton nom de BDD
+      MYSQL_DATABASE: baobab_cinema 
     volumes:
       - cinema-db-data:/var/lib/mysql
     networks:
