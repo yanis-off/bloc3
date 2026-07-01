@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Logo from "@/user/components/public/Logo";
 
 // lucide-react dropped brand/logo icons a while back, so these four are
 // inlined directly from the design export instead of imported.
@@ -73,21 +74,11 @@ const FOOTER_COLUMNS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[var(--border)] px-8 pb-9 pt-16">
-      <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-10 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
-        <div>
-          <a href="#top" className="mb-[18px] flex items-center gap-[11px] text-[var(--text)]">
-            <span
-              className="h-8 w-8 shrink-0 rounded-full"
-              style={{
-                background: "radial-gradient(circle at 35% 30%, #5E94CE, #17286D)",
-                boxShadow: "0 0 18px rgba(58,110,165,0.45)",
-              }}
-            />
-            <span className="font-['Sora'] text-[17px] font-bold tracking-[0.04em]">
-              BAOBAB
-              <span className="font-light text-[var(--accent2)]"> CINÉMA</span>
-            </span>
+    <footer className="border-t border-[var(--border)] px-6 pb-9 pt-16 sm:px-8">
+      <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
+        <div className="sm:col-span-2 md:col-span-1">
+          <a href="#top" className="mb-[18px] inline-block text-[var(--text)]">
+            <Logo scale={0.85} />
           </a>
           <p className="mb-[22px] max-w-[300px] text-sm font-light leading-[1.65] text-[var(--faint)]">
             On se retrouve sous le baobab. Le cinéma comme un moment partagé,
@@ -127,7 +118,7 @@ export default function Footer() {
         ))}
       </div>
 
-      <div className="mx-auto mt-12 flex max-w-[1320px] flex-wrap items-center justify-between gap-3.5 border-t border-[var(--border)] pt-[26px]">
+      <div className="mx-auto mt-12 flex max-w-[1320px] flex-col items-start gap-3 border-t border-[var(--border)] pt-[26px] sm:flex-row sm:items-center sm:justify-between">
         <span className="text-[13px] text-[var(--faint)]">
           © {new Date().getFullYear()} Baobab Cinéma. Tous droits réservés.
         </span>

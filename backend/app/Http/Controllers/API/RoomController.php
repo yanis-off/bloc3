@@ -18,6 +18,8 @@ class RoomController extends Controller
         $validated = $request->validate([
             'name'     => 'required|string|max:100|unique:rooms,name',
             'capacity' => 'required|integer|min:1',
+            'format' => 'required|in:standard,imax,vip',
+            'price'  => 'required|numeric|min:0',
         ]);
 
         $room = Room::create($validated);
@@ -35,6 +37,8 @@ class RoomController extends Controller
         $validated = $request->validate([
             'name'     => 'required|string|max:100|unique:rooms,name,' . $room->id_room . ',id_room',
             'capacity' => 'required|integer|min:1',
+            'format' => 'required|in:standard,imax,vip',
+            'price'  => 'required|numeric|min:0',
         ]);
 
         $room->update($validated);

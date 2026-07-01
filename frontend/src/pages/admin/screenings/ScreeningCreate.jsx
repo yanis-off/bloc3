@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { CalendarClock, ChevronDown, AlertCircle, X, Check } from 'lucide-react'
 import AdminLayout from '../../../components/AdminLayout'
+import PageHeader from '../../../components/PageHeader'
+import FormField from '../../../components/FormField'
 import api from '../../../api/axios'
 
 function ScreeningCreate() {
@@ -45,63 +47,101 @@ function ScreeningCreate() {
         }
     }
 
-    const inputClass = "w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm"
-    const labelClass = "block text-sm font-medium text-gray-700 mb-1"
+    const inputStyle = {
+        backgroundColor: 'var(--admin-surface2)',
+        borderColor: 'var(--admin-border)',
+        color: 'var(--admin-text)',
+    }
+    const inputClass = "admin-input w-full rounded-xl border px-4 py-3 text-[15px] outline-none"
+    const selectClass = "admin-input w-full appearance-none rounded-xl border px-4 py-3 pr-9 text-[15px] outline-none"
 
     return (
         <AdminLayout>
-            <div className="flex items-center gap-4 mb-6">
-                <Link to="/admin/screenings" className="text-gray-500 hover:text-gray-700">
-                    <ArrowLeft size={20} />
-                </Link>
-                <h1 className="text-3xl font-black" style={{ fontFamily: 'var(--font-title)' }}>
-                    Ajouter une séance
-                </h1>
+            <div className="mx-auto max-w-2xl">
+                <PageHeader
+                    icon={CalendarClock}
+                    title="Ajouter une séance"
+                    backTo="/admin/screenings"
+                />
+
+                {error && (
+                    <div
+                        className="mt-6 flex items-center gap-2 rounded-xl px-4 py-3 text-sm"
+                        style={{ backgroundColor: 'var(--admin-danger-soft)', color: 'var(--admin-danger)' }}
+                    >
+                        <AlertCircle size={16} className="shrink-0" />
+                        {error}
+                    </div>
+                )}
+
+                <form
+                    onSubmit={handleSubmit}
+                    className="admin-card mt-6 rounded-2xl border p-6"
+                    style={{ backgroundColor: 'var(--admin-surface)', borderColor: 'var(--admin-border)' }}
+                >
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <FormField label="Film *" className="sm:col-span-2">
+                            <div className="relative">
+                                <select name="id_film" value={form.id_film} onChange={handleChange} required className={selectClass} style={inputStyle}>
+                                    <option value="">-- Sélectionner un film --</option>
+                                    {films.map(f => (
+                                        <option key={f.id_film} value={f.id_film}>{f.title}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown size={16} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--admin-muted)' }} />
+                            </div>
+                        </FormField>
+
+                        <FormField label="Salle *" className="sm:col-span-2">
+                            <div className="relative">
+                                <select name="id_room" value={form.id_room} onChange={handleChange} required className={selectClass} style={inputStyle}>
+                                    <option value="">-- Sélectionner une salle --</option>
+                                    {rooms.map(r => (
+                                        <option key={r.id_room} value={r.id_room}>{r.name} ({r.capacity} places)</option>
+                                    ))}
+                                </select>
+                                <ChevronDown size={16} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--admin-muted)' }} />
+                            </div>
+                        </FormField>
+
+                        <FormField label="Date *">
+                            <input name="date" type="date" value={form.date} onChange={handleChange} required className={inputClass} style={inputStyle} />
+                        </FormField>
+
+                        <FormField label="Heure *">
+                            <input name="time" type="time" value={form.time} onChange={handleChange} required className={inputClass} style={inputStyle} />
+                        </FormField>
+
+                        <FormField
+                            label="Places disponibles *"
+                            hint="Rempli automatiquement selon la salle choisie."
+                            className="sm:col-span-2"
+                        >
+                            <input name="seats_remaining" type="number" value={form.seats_remaining} onChange={handleChange} required min="0" className={inputClass} style={inputStyle} />
+                        </FormField>
+                    </div>
+
+                    <div className="mt-6 flex gap-2.5">
+                        <button
+                            type="submit"
+                            className="admin-primary-btn flex items-center gap-1.5 rounded-xl px-5 py-3 text-sm font-semibold text-white"
+                            style={{ backgroundColor: 'var(--admin-accent)' }}
+                        >
+                            <Check size={15} />
+                            Enregistrer
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => navigate('/admin/screenings')}
+                            className="flex items-center gap-1.5 rounded-xl px-5 py-3 text-sm font-medium"
+                            style={{ color: 'var(--admin-muted)', backgroundColor: 'transparent', border: '1px solid var(--admin-border)' }}
+                        >
+                            <X size={15} />
+                            Annuler
+                        </button>
+                    </div>
+                </form>
             </div>
-            {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
-            <form onSubmit={handleSubmit} className="max-w-2xl">
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2">
-                        <label className={labelClass}>Film *</label>
-                        <select name="id_film" value={form.id_film} onChange={handleChange} required className={inputClass}>
-                            <option value="">-- Sélectionner un film --</option>
-                            {films.map(f => (
-                                <option key={f.id_film} value={f.id_film}>{f.title}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="col-span-2">
-                        <label className={labelClass}>Salle *</label>
-                        <select name="id_room" value={form.id_room} onChange={handleChange} required className={inputClass}>
-                            <option value="">-- Sélectionner une salle --</option>
-                            {rooms.map(r => (
-                                <option key={r.id_room} value={r.id_room}>{r.name} ({r.capacity} places)</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <label className={labelClass}>Date *</label>
-                        <input name="date" type="date" value={form.date} onChange={handleChange} required className={inputClass} />
-                    </div>
-                    <div>
-                        <label className={labelClass}>Heure *</label>
-                        <input name="time" type="time" value={form.time} onChange={handleChange} required className={inputClass} />
-                    </div>
-                    <div className="col-span-2">
-                        <label className={labelClass}>Places disponibles *</label>
-                        <input name="seats_remaining" type="number" value={form.seats_remaining} onChange={handleChange} required min="0" className={inputClass} />
-                        <p className="text-xs text-gray-400 mt-1">Rempli automatiquement selon la salle choisie.</p>
-                    </div>
-                </div>
-                <div className="flex gap-3 mt-6">
-                    <button type="submit" className="px-6 py-2 text-white text-sm font-medium rounded" style={{ background: 'var(--color-accent)' }}>
-                        Enregistrer
-                    </button>
-                    <Link to="/admin/screenings" className="px-6 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded">
-                        Annuler
-                    </Link>
-                </div>
-            </form>
         </AdminLayout>
     )
 }

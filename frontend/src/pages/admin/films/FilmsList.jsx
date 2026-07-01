@@ -1,17 +1,23 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Pencil, Trash2, Plus, Eye } from 'lucide-react'
+import { Pencil, Trash2, Plus, Eye, Film as FilmIcon } from 'lucide-react'
 import AdminLayout from '../../../components/AdminLayout'
+import PageHeader from '../../../components/PageHeader'
 import api from '../../../api/axios'
+
+const STORAGE_URL = 'http://127.0.0.1:8000/storage/'
 
 function FilmsList() {
     const [films, setFilms] = useState([])
+    const [loading, setLoading] = useState(true)
     const navigate = useNavigate()
 
     useEffect(() => {
         const load = async () => {
+            setLoading(true)
             const res = await api.get('/films')
             setFilms(res.data)
+            setLoading(false)
         }
         load()
     }, [])
@@ -22,117 +28,142 @@ function FilmsList() {
         setFilms(films.filter(f => f.id_film !== id))
     }
 
+    const statusInfo = (status) =>
+        status === 'showing'
+            ? { label: "À l'affiche", color: 'var(--admin-success)', bg: 'var(--admin-success-soft)' }
+            : { label: 'À venir', color: 'var(--admin-warning)', bg: 'var(--admin-warning-soft)' }
+
     return (
         <AdminLayout>
-            <div className="flex justify-between items-center mb-8">
-                <h1 className="text-2xl font-bold text-white" style={{ fontFamily: '"Archivo Black", sans-serif' }}>
-                    Films
-                </h1>
-                <button
-                    onClick={() => navigate('/admin/films/create')}
-                    className="inline-flex items-center gap-2.5 px-6 py-3 rounded-lg text-base font-semibold text-white transition-colors cursor-pointer"
-                    style={{ background: '#17286D' }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#1e3a8a'}
-                    onMouseLeave={e => e.currentTarget.style.background = '#17286D'}
-                >
-                    <Plus size={18} />
-                    Ajouter un film
-                </button>
-            </div>
+            <div className="mx-auto max-w-6xl">
+                <PageHeader
+                    icon={FilmIcon}
+                    title="Films"
+                    subtitle="Le catalogue complet, à l'affiche et à venir."
+                    action={
+                        <button
+                            onClick={() => navigate('/admin/films/create')}
+                            className="admin-primary-btn flex items-center justify-center gap-2 whitespace-nowrap rounded-xl px-5 py-3 text-sm font-semibold text-white"
+                            style={{ backgroundColor: 'var(--admin-accent)', border: 'none', cursor: 'pointer' }}
+                        >
+                            <Plus size={16} />
+                            Ajouter un film
+                        </button>
+                    }
+                />
 
-            <div className="overflow-x-auto rounded-xl border border-white/10 bg-[#1a2238] shadow-lg">
-                <table className="w-full min-w-[900px] text-base text-gray-200">
-                    <thead className="bg-[#222d4a] text-gray-300 uppercase text-xs tracking-[0.15em]">
-                        <tr>
-                            <th className="px-8 py-5 text-left font-semibold">Affiche</th>
-                            <th className="px-8 py-5 text-left font-semibold">Titre</th>
-                            <th className="px-8 py-5 text-left font-semibold">Catégorie</th>
-                            <th className="px-8 py-5 text-left font-semibold">Durée</th>
-                            <th className="px-8 py-5 text-left font-semibold">Statut</th>
-                            <th className="px-8 py-5 text-right font-semibold">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                        {films.map(film => (
-                            <tr key={film.id_film} className="transition-colors hover:bg-white/5">
-                                <td className="px-8 py-5">
-                                    {film.poster ? (
-                                        <img
-                                            src={`http://127.0.0.1:8000/storage/${film.poster}`}
-                                            alt={film.title}
-                                            className="w-16 h-24 object-cover rounded-md ring-1 ring-white/10"
-                                        />
-                                    ) : (
-                                        <div className="w-16 h-24 bg-white/5 rounded-md flex items-center justify-center text-gray-500 text-[10px] ring-1 ring-white/10">
-                                            N/A
+                <div className="admin-card mt-7 overflow-x-auto rounded-2xl border" style={{ borderColor: 'var(--admin-border)' }}>
+                    <div className="min-w-[860px]">
+                        <div
+                            className="grid grid-cols-[80px_1.4fr_0.9fr_0.7fr_1fr_auto] gap-4 px-5 py-3.5 text-xs font-semibold uppercase tracking-wide"
+                            style={{
+                                background: 'linear-gradient(135deg, var(--admin-accent-soft), var(--admin-surface2))',
+                                color: 'var(--admin-muted)',
+                            }}
+                        >
+                            <span>Affiche</span>
+                            <span>Titre</span>
+                            <span>Catégorie</span>
+                            <span>Durée</span>
+                            <span>Statut</span>
+                            <span>Actions</span>
+                        </div>
+
+                        {loading ? (
+                            <div className="px-5 py-10 text-center text-sm" style={{ color: 'var(--admin-muted)' }}>
+                                Chargement…
+                            </div>
+                        ) : films.length === 0 ? (
+                            <div className="flex flex-col items-center gap-2 px-5 py-12 text-center" style={{ color: 'var(--admin-muted)' }}>
+                                <FilmIcon size={22} style={{ opacity: 0.5 }} />
+                                <p className="text-sm">Aucun film pour le moment.</p>
+                            </div>
+                        ) : (
+                            films.map((film) => {
+                                const status = statusInfo(film.status)
+                                return (
+                                    <div
+                                        key={film.id_film}
+                                        className="admin-row grid grid-cols-[80px_1.4fr_0.9fr_0.7fr_1fr_auto] items-center gap-4 px-5 py-3.5"
+                                        style={{ '--admin-row-accent': status.color }}
+                                    >
+                                        {film.poster ? (
+                                            <img
+                                                src={`${STORAGE_URL}${film.poster}`}
+                                                alt={film.title}
+                                                className="h-[72px] w-[52px] rounded-md object-cover"
+                                                style={{ border: '1px solid var(--admin-border)' }}
+                                            />
+                                        ) : (
+                                            <div
+                                                className="flex h-[72px] w-[52px] items-center justify-center rounded-md text-[9px]"
+                                                style={{
+                                                    backgroundColor: 'var(--admin-surface2)',
+                                                    color: 'var(--admin-muted)',
+                                                    border: '1px solid var(--admin-border)',
+                                                }}
+                                            >
+                                                N/A
+                                            </div>
+                                        )}
+
+                                        <span className="truncate text-[15px] font-medium" style={{ color: 'var(--admin-text)' }}>
+                                            {film.title}
+                                        </span>
+
+                                        <span className="truncate text-sm" style={{ color: 'var(--admin-muted)' }}>
+                                            {film.category?.name || '—'}
+                                        </span>
+
+                                        <span className="text-sm" style={{ color: 'var(--admin-muted)' }}>
+                                            {film.duration_min ? `${film.duration_min} min` : '—'}
+                                        </span>
+
+                                        <span>
+                                            <span
+                                                className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold"
+                                                style={{ backgroundColor: status.bg, color: status.color }}
+                                            >
+                                                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: status.color }} />
+                                                {status.label}
+                                            </span>
+                                        </span>
+
+                                        <div className="flex items-center gap-2">
+                                            <Link
+                                                to={`/admin/films/${film.id_film}`}
+                                                aria-label="Voir"
+                                                title="Voir"
+                                                className="admin-icon-btn flex h-8 w-8 items-center justify-center rounded-lg"
+                                                style={{ color: 'var(--admin-text)', backgroundColor: 'var(--admin-surface2)' }}
+                                            >
+                                                <Eye size={14} />
+                                            </Link>
+                                            <Link
+                                                to={`/admin/films/${film.id_film}/edit`}
+                                                aria-label="Modifier"
+                                                title="Modifier"
+                                                className="admin-icon-btn flex h-8 w-8 items-center justify-center rounded-lg"
+                                                style={{ color: 'var(--admin-text)', backgroundColor: 'var(--admin-surface2)' }}
+                                            >
+                                                <Pencil size={14} />
+                                            </Link>
+                                            <button
+                                                onClick={() => handleDelete(film.id_film)}
+                                                aria-label="Supprimer"
+                                                title="Supprimer"
+                                                className="admin-icon-btn flex h-8 w-8 items-center justify-center rounded-lg"
+                                                style={{ color: 'var(--admin-danger)', backgroundColor: 'var(--admin-danger-soft)', border: 'none', cursor: 'pointer' }}
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
                                         </div>
-                                    )}
-                                </td>
-                                <td className="px-4 sm:px-6 py-5 font-medium text-white whitespace-nowrap">
-                                    {film.title}
-                                </td>
-                                <td className="px-4 sm:px-6 py-5 text-gray-400 whitespace-nowrap">
-                                    {film.category?.name || '—'}
-                                </td>
-                                <td className="px-4 sm:px-6 py-5 text-gray-400 whitespace-nowrap">
-                                    {film.duration_min ? `${film.duration_min} min` : '—'}
-                                </td>
-                                <td className="px-4 sm:px-6 py-5">
-                                    <span className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium ring-1 ${film.status === 'showing'
-                                        ? 'bg-emerald-500/10 text-emerald-300 ring-emerald-400/20'
-                                        : 'bg-orange-500/10 text-orange-300 ring-orange-400/20'
-                                        }`}>
-                                        <span className={`h-1.5 w-1.5 rounded-full ${film.status === 'showing' ? 'bg-emerald-400' : 'bg-orange-400'}`} />
-                                        {film.status === 'showing' ? "À l'affiche" : 'À venir'}
-                                    </span>
-                                </td>
-                                <td className="px-4 sm:px-6 py-5">
-                                    <div className="flex justify-end gap-3">
-                                        <Link
-                                            to={`/admin/films/${film.id_film}`}
-                                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-colors"
-                                            style={{ color: '#ABC0E0' }}
-                                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(171,192,224,0.1)'}
-                                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                                            title="Voir"
-                                        >
-                                            <Eye size={15} />
-                                            <span className="hidden sm:inline text-xs font-medium">Voir</span>
-                                        </Link>
-                                        <Link
-                                            to={`/admin/films/${film.id_film}/edit`}
-                                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-colors"
-                                            style={{ color: '#ABC0E0' }}
-                                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(171,192,224,0.1)'}
-                                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                                            title="Modifier"
-                                        >
-                                            <Pencil size={15} />
-                                            <span className="hidden sm:inline text-xs font-medium">Modifier</span>
-                                        </Link>
-                                        <button
-                                            onClick={() => handleDelete(film.id_film)}
-                                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-red-400 transition-colors"
-                                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
-                                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                                            title="Supprimer"
-                                        >
-                                            <Trash2 size={15} />
-                                            <span className="hidden sm:inline text-xs font-medium">Supprimer</span>
-                                        </button>
                                     </div>
-                                </td>
-                            </tr>
-                        ))}
-                        {films.length === 0 && (
-                            <tr>
-                                <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
-                                    Aucun film pour le moment.
-                                </td>
-                            </tr>
+                                )
+                            })
                         )}
-                    </tbody>
-                </table>
+                    </div>
+                </div>
             </div>
         </AdminLayout>
     )

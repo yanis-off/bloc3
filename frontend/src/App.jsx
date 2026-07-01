@@ -1,9 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Login from './pages/public/Login'
 import Register from './pages/public/Register'
-import Home from './pages/public/Home'
 import Accueil from './user/pages/public/Accueil'
-import Films from './pages/public/Films'
+import FilmDetail from './user/pages/public/FilmDetail'
+import Auth from './user/pages/public/Auth'
+import Profile from './user/pages/public/Profile'
+import Seances from './user/pages/public/Seances'
 import Dashboard from './pages/admin/Dashboard'
 import Categories from './pages/admin/Categories'
 import Rooms from './pages/admin/Rooms'
@@ -11,25 +13,34 @@ import PrivateRoute from './components/PrivateRoute'
 import FilmsList from './pages/admin/films/FilmsList'
 import FilmCreate from './pages/admin/films/FilmCreate'
 import FilmEdit from './pages/admin/films/FilmEdit'
-import ScreeningsList from './pages/admin/Screenings/ScreeningsList'
-import ScreeningCreate from './pages/admin/Screenings/ScreeningCreate'
+import ScreeningsList from './pages/admin/screenings/ScreeningsList'
+import ScreeningCreate from './pages/admin/screenings/ScreeningCreate'
 import ScreeningEdit from './pages/admin/screenings/ScreeningEdit'
 import BookingsList from './pages/admin/BookingsList'
 import FilmShow from './pages/admin/films/FilmShow'
+import AdminProfile from './pages/admin/AdminProfile'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
 
-        <Route path="/accueil-preview" element={<Accueil />} />
+        <Route path="/" element={<Accueil />} />
+
+        <Route path="/films/:id" element={<FilmDetail />} />
+
+        <Route path="/seances" element={<Seances />} />
+
+        <Route path="/connexion" element={<Auth initialMode="login" />} />
+        <Route path="/inscription" element={<Auth initialMode="register" />} />
+
+        <Route path="/profil" element={<PrivateRoute><Profile /></PrivateRoute>} />
+
+        
 
         <Route path="/login" element={<Login />} />
 
         <Route path="/register" element={<Register />} />
-
-        <Route path="/films" element={<Films />} />
 
         <Route path="/admin" element={
           <PrivateRoute adminOnly={true}><Dashboard /></PrivateRoute>
@@ -74,6 +85,11 @@ function App() {
         <Route path="/admin/films/:id" element={
           <PrivateRoute adminOnly={true}><FilmShow /></PrivateRoute>
         } />
+
+        <Route path="/admin/profile" element={
+          <PrivateRoute adminOnly={true}><AdminProfile /></PrivateRoute>
+        } />
+
 
       </Routes>
     </BrowserRouter>

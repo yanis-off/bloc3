@@ -37,7 +37,7 @@ export default function Accueil() {
 function AccueilContent() {
   const { showToast } = useToast();
   const [featured, setFeatured] = useState(FEATURED_FILM);
-  const [nowShowing, setNowShowing] = useState(DEMO_NOW_SHOWING);
+  const [nowShowing, setNowShowing] = useState([FEATURED_FILM, ...DEMO_NOW_SHOWING]);
   const [upcoming, setUpcoming] = useState(DEMO_UPCOMING);
   const [categories, setCategories] = useState(CATEGORY_NAMES);
   const [activeCat, setActiveCat] = useState("Tous");
@@ -45,26 +45,33 @@ function AccueilContent() {
 
   useEffect(() => {
     // Demo data above renders immediately so the page never looks empty;
-    // it's replaced as soon as the real API responses come back. If a
+    // it's replaced as soon as the real API response comes back. If the
     // request fails (e.g. backend not running yet), we just keep the demo
-    // data — adjust the endpoints/field mapping below to match your actual
-    // Laravel routes and serializers.
+    // data.
+    //
+    // One single GET /films call, split client-side by film.status — this
+    // doesn't depend on the backend actually filtering by a `status` query
+    // param, it just reads the field that's already on each film (the same
+    // one driving the "À l'affiche" / "À venir" badge in the admin Films
+    // list). If your status values aren't exactly "showing" / "coming_soon",
+    // update the two checks below to match.
     api
-      .get("/films", { params: { status: "showing" } })
+      .get("/films")
       .then((res) => {
         const films = res.data?.data ?? res.data ?? [];
-        if (films.length) {
-          setFeatured(films[0]);
-          setNowShowing(films.slice(1));
-        }
-      })
-      .catch(() => {});
+        if (!films.length) return;
 
-    api
-      .get("/films", { params: { status: "coming_soon" } })
-      .then((res) => {
-        const films = res.data?.data ?? res.data ?? [];
-        if (films.length) setUpcoming(films);
+        const showing = films.filter((f) => f.status === "showing");
+        const comingSoon = films.filter((f) => f.status === "coming_soon");
+
+        if (showing.length) {
+          // No dedicated "featured" flag exists on the film model yet, so
+          // the hero just spotlights the first showing film — and it stays
+          // in the grid below too, rather than vanishing from "À l'affiche".
+          setFeatured(showing[0]);
+          setNowShowing(showing);
+        }
+        if (comingSoon.length) setUpcoming(comingSoon);
       })
       .catch(() => {});
 
@@ -99,24 +106,24 @@ function AccueilContent() {
       />
 
       {/* Search + genre filter */}
-      <section className="relative z-10 mx-auto max-w-[1320px] px-8 pt-[18px]">
+      <section className="relative z-10 mx-auto max-w-[1320px] px-4 pt-[18px] sm:px-8">
         <div
-          className="-mt-11 rounded-[22px] border p-[26px] shadow-[0_30px_80px_rgba(0,0,0,0.45)] backdrop-blur-[8px]"
+          className="-mt-11 rounded-[22px] border p-4 shadow-[0_30px_80px_rgba(0,0,0,0.45)] backdrop-blur-[8px] sm:p-[26px]"
           style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
         >
           <div
-            className="flex items-center gap-3.5 rounded-2xl border py-1.5 pl-5"
+            className="flex items-center gap-2 rounded-2xl border py-1.5 pl-3 sm:gap-3.5 sm:pl-5"
             style={{ backgroundColor: "var(--surface2)", borderColor: "var(--border)" }}
           >
             <Search className="h-5 w-5 shrink-0" style={{ color: "var(--muted)" }} />
             <input
               placeholder="Rechercher un film, un genre, un réalisateur…"
-              className="flex-1 bg-transparent py-3 text-base placeholder:opacity-60 focus:outline-none"
+              className="min-w-0 flex-1 bg-transparent py-3 text-sm placeholder:opacity-60 focus:outline-none sm:text-base"
               style={{ color: "var(--text)" }}
             />
             <button
               type="button"
-              className="shrink-0 rounded-[10px] px-[26px] py-[13px] font-['Sora'] text-[14.5px] font-semibold text-white transition-colors hover:bg-[var(--accent2)]"
+              className="shrink-0 rounded-[10px] px-4 py-2.5 font-['Sora'] text-[13px] font-semibold text-white transition-colors hover:bg-[var(--accent2)] sm:px-[26px] sm:py-[13px] sm:text-[14.5px]"
               style={{ backgroundColor: "var(--accent)" }}
             >
               Rechercher
@@ -134,7 +141,7 @@ function AccueilContent() {
       </section>
 
       {/* Now showing */}
-      <section id="films" className="mx-auto max-w-[1320px] px-8 pt-[78px]">
+      <section id="films" className="mx-auto max-w-[1320px] px-4 pt-[78px] sm:px-8">
         <div className="mb-[34px] flex items-end justify-between gap-5">
           <div>
             <span className="font-mono text-[11px] uppercase tracking-[0.28em] text-[var(--accent2)]">
@@ -170,7 +177,7 @@ function AccueilContent() {
       </section>
 
       {/* Upcoming */}
-      <section className="mx-auto max-w-[1320px] px-8 pt-16">
+      <section className="mx-auto max-w-[1320px] px-4 pt-16 sm:px-8">
         <div className="mb-[34px]">
           <span className="font-mono text-[11px] uppercase tracking-[0.28em] text-[var(--accent2)]">
             Bientôt sous le baobab
@@ -210,7 +217,7 @@ function AccueilContent() {
               "radial-gradient(ellipse, rgba(58,110,165,0.18), transparent 70%)",
           }}
         />
-        <div className="relative mx-auto max-w-[1320px] px-8">
+        <div className="relative mx-auto max-w-[1320px] px-4 sm:px-8">
           <div className="mx-auto mb-16 max-w-[680px] text-center">
             <span className="font-mono text-[11px] uppercase tracking-[0.28em] text-[var(--accent2)]">
               L'expérience Baobab
@@ -254,7 +261,7 @@ function AccueilContent() {
       </section>
 
       {/* Pricing */}
-      <section id="tarifs" className="mx-auto max-w-[1320px] px-8 pt-24">
+      <section id="tarifs" className="mx-auto max-w-[1320px] px-4 pt-24 sm:px-8">
         <div className="mx-auto mb-14 max-w-[620px] text-center">
           <span className="font-mono text-[11px] uppercase tracking-[0.28em] text-[var(--accent2)]">
             Tarifs
@@ -282,7 +289,13 @@ function AccueilContent() {
       <TrailerModal
         open={trailerOpen}
         onClose={() => setTrailerOpen(false)}
-        film={featured}
+        film={{
+          title: featured.title,
+          genre: featured.category?.name,
+          runtime: formatDuration(featured.duration_min),
+          year: featured.release_date ? new Date(featured.release_date).getFullYear() : "",
+          trailerUrl: featured.trailer_url ?? null,
+        }}
       />
       <Toast />
     </div>
@@ -290,39 +303,73 @@ function AccueilContent() {
 }
 
 function Hero({ film, onWatchTrailer, onReserve }) {
+  const posterUrl = film.poster ? `http://127.0.0.1:8000/storage/${film.poster}` : null;
+
   return (
     <header className="relative flex min-h-screen items-end overflow-hidden">
+      {/* Poster en fond flouté */}
+      {posterUrl && (
+        <img
+          src={posterUrl}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{ filter: "blur(1px) brightness(0.85) saturate(1.2)", transform: "scale(1.04)" }}
+        />
+      )}
+
+      {/* Dégradé de base */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: posterUrl
+            ? "linear-gradient(180deg, rgba(0,0,0,.4) 0%, rgba(0,0,0,.1) 35%, rgba(0,0,0,.3) 65%, var(--bg) 100%)"
+            : "radial-gradient(120% 90% at 70% 20%, #17286D 0%, #0A0F2C 45%, #000 100%)",
+        }}
+      />
+
+      {/* Motif de lignes — uniquement sans poster */}
+      {!posterUrl && (
+        <div
+          className="absolute inset-0 opacity-50"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(115deg, rgba(168,192,224,.05) 0 2px, transparent 2px 26px)",
+          }}
+        />
+      )}
+
+      {/* Halos ambiants — uniquement sans poster */}
+      {!posterUrl && (
+        <>
+          <div
+            className="pointer-events-none absolute -top-[12%] left-[62%] h-[780px] w-[780px] animate-pulse rounded-full blur-[20px]"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(58,110,165,.55) 0%, rgba(23,40,109,.22) 40%, transparent 70%)",
+              animationDuration: "9s",
+            }}
+          />
+          <div
+            className="pointer-events-none absolute -bottom-[20%] -left-[8%] h-[620px] w-[620px] animate-pulse rounded-full blur-[30px]"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(94,148,206,.3) 0%, transparent 65%)",
+              animationDuration: "11s",
+            }}
+          />
+        </>
+      )}
+
+      {/* Dégradé latéral gauche — met le texte en valeur */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(120% 90% at 70% 20%, #17286D 0%, #0A0F2C 45%, #000 100%)",
+            "linear-gradient(90deg, rgba(0,0,0,.78) 0%, rgba(0,0,0,.35) 45%, transparent 75%)",
         }}
       />
-      <div
-        className="absolute inset-0 opacity-50"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(115deg, rgba(168,192,224,.05) 0 2px, transparent 2px 26px)",
-        }}
-      />
-      {/* Ambient projector light */}
-      <div
-        className="pointer-events-none absolute -top-[12%] left-[62%] h-[780px] w-[780px] animate-pulse rounded-full blur-[20px]"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(58,110,165,.55) 0%, rgba(23,40,109,.22) 40%, transparent 70%)",
-          animationDuration: "9s",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute -bottom-[20%] -left-[8%] h-[620px] w-[620px] animate-pulse rounded-full blur-[30px]"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(94,148,206,.3) 0%, transparent 65%)",
-          animationDuration: "11s",
-        }}
-      />
+      {/* Fondu bas */}
       <div
         className="absolute inset-0"
         style={{
@@ -330,15 +377,8 @@ function Hero({ film, onWatchTrailer, onReserve }) {
             "linear-gradient(180deg, rgba(0,0,0,.55) 0%, transparent 30%, rgba(0,0,0,.35) 60%, var(--bg) 100%)",
         }}
       />
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(90deg, rgba(0,0,0,.72) 0%, rgba(0,0,0,.3) 45%, transparent 75%)",
-        }}
-      />
 
-      <div className="relative z-[5] mx-auto w-full max-w-[1320px] px-8 pb-[88px]">
+      <div className="relative z-[5] mx-auto w-full max-w-[1320px] px-4 pb-[88px] sm:px-8">
         <div className="max-w-[640px]">
           <div className="mb-[22px] flex items-center gap-3">
             <span className="font-mono text-[11px] uppercase tracking-[0.32em] text-[#5E94CE]">
@@ -425,9 +465,9 @@ function Newsletter({ onSubscribe }) {
   };
 
   return (
-    <section className="mx-auto max-w-[1320px] px-8 pb-6 pt-24">
+    <section className="mx-auto max-w-[1320px] px-4 pb-6 pt-24 sm:px-8">
       <div
-        className="relative overflow-hidden rounded-[26px] border px-11 py-16 text-center"
+        className="relative overflow-hidden rounded-[26px] border px-5 py-10 text-center sm:px-11 sm:py-16"
         style={{
           background: "linear-gradient(135deg, #17286D, #0A0F2C 70%)",
           borderColor: "rgba(94,148,206,.25)",

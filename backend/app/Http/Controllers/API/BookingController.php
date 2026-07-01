@@ -42,10 +42,19 @@ class BookingController extends Controller
             ], 422);
         }
 
+        $screeningDateTime = \Carbon\Carbon::parse($screening->date . ' ' . $screening->time);
+        $expiresAt = $screeningDateTime->subHours(3);
+
+        if ($expiresAt->isPast()) {
+            return response()->json([
+                'message' => 'Cette séance débute dans moins de 3h. Réservez sur place.'
+            ], 422);
+        }
+
         $booking = Booking::create([
             'seats_count'  => $validated['seats_count'],
             'status'       => 'pending',
-            'expires_at'   => now()->addHours(48),
+            'expires_at'   => $expiresAt,
             'id_user'      => Auth::id(),
             'id_screening' => $validated['id_screening'],
         ]);
@@ -69,8 +78,10 @@ class BookingController extends Controller
         $oldStatus = $booking->status;
         $booking->update($validated);
 
-        if (in_array($validated['status'], ['expired', 'cancelled'])
-            && !in_array($oldStatus, ['expired', 'cancelled'])) {
+        if (
+            in_array($validated['status'], ['expired', 'cancelled'])
+            && !in_array($oldStatus, ['expired', 'cancelled'])
+        ) {
             $booking->screening->increment('seats_remaining', $booking->seats_count);
         }
 
@@ -79,6 +90,10 @@ class BookingController extends Controller
 
     public function destroy(Booking $booking)
     {
+        if ($booking->id_user !== Auth::id() && !Auth::user()->isAdmin()) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
         if (!in_array($booking->status, ['expired', 'cancelled'])) {
             $booking->screening->increment('seats_remaining', $booking->seats_count);
         }

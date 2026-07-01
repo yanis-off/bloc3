@@ -6,6 +6,8 @@ use App\Http\Controllers\API\FilmController;
 use App\Http\Controllers\API\ScreeningController;
 use App\Http\Controllers\API\BookingController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\API\UserController;
+
 
 // Routes publiques
 Route::get('/films', [FilmController::class, 'index']);
@@ -20,6 +22,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/bookings', [BookingController::class, 'index']);
     Route::get('/bookings/{booking}', [BookingController::class, 'show']);
     Route::delete('/bookings/{booking}', [BookingController::class, 'destroy']);
+    Route::put('/user', [UserController::class, 'update']);
+    Route::put('/user/password', [UserController::class, 'updatePassword']);
 });
 
 // Routes admin uniquement

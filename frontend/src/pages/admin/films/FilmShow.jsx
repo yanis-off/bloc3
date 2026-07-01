@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Film, Pencil, Trash2, ExternalLink } from 'lucide-react'
 import AdminLayout from '../../../components/AdminLayout'
+import PageHeader from '../../../components/PageHeader'
 import api from '../../../api/axios'
+
+const STORAGE_URL = 'http://127.0.0.1:8000/storage/'
 
 function FilmShow() {
     const { id } = useParams()
@@ -23,100 +26,143 @@ function FilmShow() {
         navigate('/admin/films')
     }
 
-    if (!film) return <AdminLayout><p style={{ color: 'white' }}>Chargement...</p></AdminLayout>
+    if (!film) {
+        return (
+            <AdminLayout>
+                <div className="mx-auto max-w-4xl text-sm" style={{ color: 'var(--admin-muted)' }}>
+                    Chargement…
+                </div>
+            </AdminLayout>
+        )
+    }
+
+    const status = film.status === 'showing'
+        ? { label: "À l'affiche", color: 'var(--admin-success)', bg: 'var(--admin-success-soft)' }
+        : { label: 'À venir', color: 'var(--admin-warning)', bg: 'var(--admin-warning-soft)' }
 
     return (
         <AdminLayout>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                <Link to="/admin/films" style={{ color: '#9aafd4', display: 'flex', alignItems: 'center' }}>
-                    <ArrowLeft size={20} />
-                </Link>
-                <h1 style={{ fontFamily: '"Archivo Black", sans-serif', color: 'white', fontSize: '1.75rem' }}>
-                    {film.title}
-                </h1>
-            </div>
+            <div className="mx-auto max-w-4xl">
+                <PageHeader icon={Film} title={film.title} backTo="/admin/films" />
 
-            <div style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '2rem', background: '#1a2238', borderRadius: '12px', padding: '2rem', border: '1px solid rgba(255,255,255,0.08)' }}>
-                {/* Affiche */}
-                <div>
+                <div
+                    className="admin-card mt-7 grid grid-cols-1 gap-7 rounded-2xl border p-6 sm:grid-cols-[200px_1fr] sm:p-7"
+                    style={{ backgroundColor: 'var(--admin-surface)', borderColor: 'var(--admin-border)' }}
+                >
                     {film.poster ? (
                         <img
-                            src={`http://127.0.0.1:8000/storage/${film.poster}`}
+                            src={`${STORAGE_URL}${film.poster}`}
                             alt={film.title}
-                            style={{ width: '100%', borderRadius: '10px', objectFit: 'cover' }}
+                            className="w-full max-w-[200px] justify-self-center rounded-xl object-cover sm:justify-self-start"
+                            style={{ aspectRatio: '2/3' }}
                         />
                     ) : (
-                        <div style={{ width: '100%', aspectRatio: '2/3', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9aafd4' }}>
+                        <div
+                            className="flex w-full max-w-[200px] items-center justify-center justify-self-center rounded-xl text-sm sm:justify-self-start"
+                            style={{
+                                aspectRatio: '2/3',
+                                backgroundColor: 'var(--admin-surface2)',
+                                color: 'var(--admin-muted)',
+                                border: '1px solid var(--admin-border)',
+                            }}
+                        >
                             Aucune affiche
                         </div>
                     )}
-                </div>
 
-                {/* Infos */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                    <div>
-                        <span style={{ color: '#9aafd4', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Catégorie</span>
-                        <p style={{ color: 'white', marginTop: '0.25rem' }}>{film.category?.name || '—'}</p>
-                    </div>
-                    <div>
-                        <span style={{ color: '#9aafd4', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Durée</span>
-                        <p style={{ color: 'white', marginTop: '0.25rem' }}>{film.duration_min ? `${film.duration_min} min` : '—'}</p>
-                    </div>
-                    <div>
-                        <span style={{ color: '#9aafd4', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Statut</span>
-                        <p style={{ marginTop: '0.25rem' }}>
-                            <span style={{
-                                display: 'inline-flex', alignItems: 'center', gap: '6px',
-                                padding: '0.3rem 0.8rem', borderRadius: '99px', fontSize: '0.8rem',
-                                background: film.status === 'showing' ? 'rgba(52,211,153,0.1)' : 'rgba(251,146,60,0.1)',
-                                color: film.status === 'showing' ? '#34d399' : '#fb923c',
-                                border: film.status === 'showing' ? '1px solid rgba(52,211,153,0.2)' : '1px solid rgba(251,146,60,0.2)',
-                            }}>
-                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: film.status === 'showing' ? '#34d399' : '#fb923c' }} />
-                                {film.status === 'showing' ? "À l'affiche" : 'À venir'}
-                            </span>
-                        </p>
-                    </div>
-                    {film.release_date && (
-                        <div>
-                            <span style={{ color: '#9aafd4', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Date de sortie</span>
-                            <p style={{ color: 'white', marginTop: '0.25rem' }}>{new Date(film.release_date).toLocaleDateString('fr-FR')}</p>
+                    <div className="flex flex-col gap-5">
+                        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
+                            <InfoBlock label="Catégorie" value={film.category?.name || '—'} />
+                            <InfoBlock label="Durée" value={film.duration_min ? `${film.duration_min} min` : '—'} />
+                            <InfoBlock
+                                label="Statut"
+                                value={
+                                    <span
+                                        className="inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
+                                        style={{ backgroundColor: status.bg, color: status.color }}
+                                    >
+                                        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: status.color }} />
+                                        {status.label}
+                                    </span>
+                                }
+                            />
+                            {film.release_date && (
+                                <InfoBlock
+                                    label="Date de sortie"
+                                    value={new Date(film.release_date).toLocaleDateString('fr-FR')}
+                                />
+                            )}
+                            {film.director && <InfoBlock label="Réalisation" value={film.director} />}
                         </div>
-                    )}
-                    {film.actors && (
-                        <div>
-                            <span style={{ color: '#9aafd4', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Acteurs</span>
-                            <p style={{ color: 'white', marginTop: '0.25rem' }}>{film.actors}</p>
-                        </div>
-                    )}
-                    {film.synopsis && (
-                        <div>
-                            <span style={{ color: '#9aafd4', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Synopsis</span>
-                            <p style={{ color: '#DDE6F0', marginTop: '0.25rem', lineHeight: '1.7' }}>{film.synopsis}</p>
-                        </div>
-                    )}
 
-                    {/* Actions */}
-                    <div style={{ display: 'flex', gap: '1rem', marginTop: 'auto', paddingTop: '1rem' }}>
-                        <Link to={`/admin/films/${id}/edit`} style={{
-                            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                            padding: '0.65rem 1.25rem', borderRadius: '8px',
-                            background: '#17286D', color: 'white', textDecoration: 'none', fontSize: '0.875rem'
-                        }}>
-                            <Pencil size={15} /> Modifier
-                        </Link>
-                        <button onClick={handleDelete} style={{
-                            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                            padding: '0.65rem 1.25rem', borderRadius: '8px',
-                            background: 'rgba(248,113,113,0.1)', color: '#f87171',
-                            border: '1px solid rgba(248,113,113,0.2)', cursor: 'pointer', fontSize: '0.875rem'
-                        }}>
-                            <Trash2 size={15} /> Supprimer
-                        </button>
+                        {film.actors && <InfoBlock label="Acteurs" value={film.actors} />}
+
+                        {film.trailer_url && (
+                            <div>
+                                <Label>Bande-annonce</Label>
+                                <a
+                                    href={film.trailer_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-1.5 inline-flex items-center gap-1.5 text-sm underline-offset-2 hover:underline"
+                                    style={{ color: 'var(--admin-accent)' }}
+                                >
+                                    <ExternalLink size={13} />
+                                    {film.trailer_url}
+                                </a>
+                            </div>
+                        )}
+
+                        {film.synopsis && (
+                            <div>
+                                <Label>Synopsis</Label>
+                                <p className="mt-1.5 text-[15px] leading-[1.7]" style={{ color: 'var(--admin-text)' }}>
+                                    {film.synopsis}
+                                </p>
+                            </div>
+                        )}
+
+                        <div className="mt-auto flex gap-2.5 pt-2">
+                            <button
+                                onClick={() => navigate(`/admin/films/${id}/edit`)}
+                                className="admin-primary-btn flex items-center gap-1.5 rounded-xl px-5 py-3 text-sm font-semibold text-white"
+                                style={{ backgroundColor: 'var(--admin-accent)', border: 'none', cursor: 'pointer' }}
+                            >
+                                <Pencil size={15} />
+                                Modifier
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="admin-icon-btn flex items-center gap-1.5 rounded-xl px-5 py-3 text-sm font-semibold"
+                                style={{ color: 'var(--admin-danger)', backgroundColor: 'var(--admin-danger-soft)', border: 'none', cursor: 'pointer' }}
+                            >
+                                <Trash2 size={15} />
+                                Supprimer
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </AdminLayout>
+    )
+}
+
+function Label({ children }) {
+    return (
+        <span className="text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: 'var(--admin-accent)' }}>
+            {children}
+        </span>
+    )
+}
+
+function InfoBlock({ label, value }) {
+    return (
+        <div>
+            <Label>{label}</Label>
+            <div className="mt-1.5 text-sm" style={{ color: 'var(--admin-text)' }}>
+                {value}
+            </div>
+        </div>
     )
 }
 

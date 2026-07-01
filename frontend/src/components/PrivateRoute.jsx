@@ -5,7 +5,9 @@ function PrivateRoute({ children, adminOnly = false }) {
     const { isAuthenticated, isAdmin } = useAuth()
 
     if (!isAuthenticated()) {
-        return <Navigate to="/login" />
+        // Admin back-office → /login (separate page, stays unchanged)
+        // User-facing protected routes (profil, etc.) → /connexion
+        return <Navigate to={adminOnly ? '/login' : '/connexion'} />
     }
 
     if (adminOnly && !isAdmin()) {

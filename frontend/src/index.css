@@ -150,3 +150,59 @@
     color: #DDE6F0;
   }
 }
+
+
+/* Add this block to index.css, anywhere after your existing @layer base
+   block (order relative to it doesn't matter — different layer entirely). */
+
+@layer components {
+  .admin-card {
+    box-shadow: var(--admin-shadow);
+  }
+
+  .admin-row {
+    background-color: var(--admin-surface);
+    border-top: 1px solid var(--admin-border);
+    border-left: 3px solid var(--admin-row-accent, transparent);
+    transition: background-color 0.2s ease, transform 0.2s ease, border-left-color 0.2s ease;
+  }
+  .admin-row:first-child {
+    border-top: none;
+  }
+  .admin-row:hover {
+    background-color: var(--admin-surface2);
+    transform: translateX(3px);
+  }
+
+  .admin-icon-btn {
+    transition: transform 0.2s ease, filter 0.2s ease;
+  }
+  .admin-icon-btn:hover {
+    transform: translateY(-1px) scale(1.06);
+    filter: brightness(1.18);
+  }
+
+  .admin-input {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .admin-input:focus {
+    border-color: var(--admin-accent) !important;
+    box-shadow: 0 0 0 3px var(--admin-accent-soft);
+  }
+
+  .admin-primary-btn {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  }
+  .admin-primary-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 26px var(--admin-accent-soft);
+    filter: brightness(1.08);
+  }
+
+  /* Native date/time input icons render dark by default, which is hard to
+     see on the admin's dark surfaces — invert them in dark mode only. */
+  .admin-input::-webkit-calendar-picker-indicator {
+    filter: var(--admin-icon-filter);
+    cursor: pointer;
+  }
+}

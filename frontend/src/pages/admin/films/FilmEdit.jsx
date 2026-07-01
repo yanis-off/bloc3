@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useParams, Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { Film, ChevronDown, AlertCircle, X, Check } from 'lucide-react'
 import AdminLayout from '../../../components/AdminLayout'
+import PageHeader from '../../../components/PageHeader'
+import FormField from '../../../components/FormField'
+import PosterUpload from '../../../components/PosterUpload'
 import api from '../../../api/axios'
 
 function FilmEdit() {
@@ -12,8 +15,8 @@ function FilmEdit() {
     const [posterFile, setPosterFile] = useState(null)
     const [currentPoster, setCurrentPoster] = useState(null)
     const [form, setForm] = useState({
-        title: '', synopsis: '', duration_min: '',
-        actors: '', release_date: '', status: 'coming_soon', id_category: ''
+        title: '', synopsis: '', duration_min: '', director: '',
+        actors: '', release_date: '', trailer_url: '', status: 'coming_soon', id_category: ''
     })
 
     useEffect(() => {
@@ -28,8 +31,10 @@ function FilmEdit() {
                 title: film.title,
                 synopsis: film.synopsis || '',
                 duration_min: film.duration_min || '',
+                director: film.director || '',
                 actors: film.actors || '',
                 release_date: film.release_date || '',
+                trailer_url: film.trailer_url || '',
                 status: film.status,
                 id_category: film.id_category || ''
             })
@@ -61,85 +66,111 @@ function FilmEdit() {
         }
     }
 
-    const inputClass = "w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm"
-    const labelClass = "block text-sm font-medium text-gray-700 mb-1"
+    const inputStyle = {
+        backgroundColor: 'var(--admin-surface2)',
+        borderColor: 'var(--admin-border)',
+        color: 'var(--admin-text)',
+    }
+    const inputClass = "admin-input w-full rounded-xl border px-4 py-3 text-[15px] outline-none"
+    const selectClass = "admin-input w-full appearance-none rounded-xl border px-4 py-3 pr-9 text-[15px] outline-none"
 
     return (
         <AdminLayout>
-            <div className="flex items-center gap-4 mb-6">
-                <Link to="/admin/films" className="text-gray-500 hover:text-gray-700">
-                    <ArrowLeft size={20} />
-                </Link>
-                <h1 className="text-3xl font-black" style={{ fontFamily: 'var(--font-title)' }}>
-                    Modifier le film
-                </h1>
+            <div className="mx-auto max-w-2xl">
+                <PageHeader icon={Film} title="Modifier le film" backTo="/admin/films" />
+
+                {error && (
+                    <div
+                        className="mt-6 flex items-center gap-2 rounded-xl px-4 py-3 text-sm"
+                        style={{ backgroundColor: 'var(--admin-danger-soft)', color: 'var(--admin-danger)' }}
+                    >
+                        <AlertCircle size={16} className="shrink-0" />
+                        {error}
+                    </div>
+                )}
+
+                <form
+                    onSubmit={handleSubmit}
+                    className="admin-card mt-6 rounded-2xl border p-6"
+                    style={{ backgroundColor: 'var(--admin-surface)', borderColor: 'var(--admin-border)' }}
+                >
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <FormField label="Titre *" className="sm:col-span-2">
+                            <input name="title" value={form.title} onChange={handleChange} required className={inputClass} style={inputStyle} />
+                        </FormField>
+
+                        <FormField label="Catégorie">
+                            <div className="relative">
+                                <select name="id_category" value={form.id_category} onChange={handleChange} className={selectClass} style={inputStyle}>
+                                    <option value="">-- Aucune --</option>
+                                    {categories.map(cat => (
+                                        <option key={cat.id_category} value={cat.id_category}>{cat.name}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown size={16} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--admin-muted)' }} />
+                            </div>
+                        </FormField>
+
+                        <FormField label="Statut *">
+                            <div className="relative">
+                                <select name="status" value={form.status} onChange={handleChange} className={selectClass} style={inputStyle}>
+                                    <option value="coming_soon">À venir</option>
+                                    <option value="showing">À l'affiche</option>
+                                </select>
+                                <ChevronDown size={16} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--admin-muted)' }} />
+                            </div>
+                        </FormField>
+
+                        <FormField label="Durée (min)">
+                            <input name="duration_min" type="number" value={form.duration_min} onChange={handleChange} className={inputClass} style={inputStyle} />
+                        </FormField>
+
+                        <FormField label="Date de sortie">
+                            <input name="release_date" type="date" value={form.release_date} onChange={handleChange} className={inputClass} style={inputStyle} />
+                        </FormField>
+
+                        <FormField label="Réalisation">
+                            <input name="director" value={form.director} onChange={handleChange} placeholder="Nom du réalisateur" className={inputClass} style={inputStyle} />
+                        </FormField>
+
+                        <FormField label="Acteurs">
+                            <input name="actors" value={form.actors} onChange={handleChange} placeholder="Séparés par une virgule" className={inputClass} style={inputStyle} />
+                        </FormField>
+
+                        <FormField label="Bande-annonce (URL)" className="sm:col-span-2" hint="YouTube ou Vimeo — ex. https://www.youtube.com/watch?v=...">
+                            <input name="trailer_url" type="url" value={form.trailer_url} onChange={handleChange} placeholder="https://www.youtube.com/watch?v=..." className={inputClass} style={inputStyle} />
+                        </FormField>
+
+                        <FormField label="Synopsis" className="sm:col-span-2">
+                            <textarea name="synopsis" value={form.synopsis} onChange={handleChange} rows={4} className={`${inputClass} resize-none`} style={inputStyle} />
+                        </FormField>
+
+                        <FormField label="Affiche" hint="Laisser vide pour conserver l'affiche actuelle." className="sm:col-span-2">
+                            <PosterUpload currentPoster={currentPoster} onChange={setPosterFile} />
+                        </FormField>
+                    </div>
+
+                    <div className="mt-6 flex gap-2.5">
+                        <button
+                            type="submit"
+                            className="admin-primary-btn flex items-center gap-1.5 rounded-xl px-5 py-3 text-sm font-semibold text-white"
+                            style={{ backgroundColor: 'var(--admin-accent)' }}
+                        >
+                            <Check size={15} />
+                            Enregistrer
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => navigate('/admin/films')}
+                            className="flex items-center gap-1.5 rounded-xl px-5 py-3 text-sm font-medium"
+                            style={{ color: 'var(--admin-muted)', backgroundColor: 'transparent', border: '1px solid var(--admin-border)' }}
+                        >
+                            <X size={15} />
+                            Annuler
+                        </button>
+                    </div>
+                </form>
             </div>
-            {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
-            <form onSubmit={handleSubmit} className="max-w-2xl">
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2">
-                        <label className={labelClass}>Titre *</label>
-                        <input name="title" value={form.title} onChange={handleChange} required className={inputClass} />
-                    </div>
-                    <div>
-                        <label className={labelClass}>Catégorie</label>
-                        <select name="id_category" value={form.id_category} onChange={handleChange} className={inputClass}>
-                            <option value="">-- Aucune --</option>
-                            {categories.map(cat => (
-                                <option key={cat.id_category} value={cat.id_category}>{cat.name}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <label className={labelClass}>Statut *</label>
-                        <select name="status" value={form.status} onChange={handleChange} className={inputClass}>
-                            <option value="coming_soon">À venir</option>
-                            <option value="showing">À l'affiche</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className={labelClass}>Durée (min)</label>
-                        <input name="duration_min" type="number" value={form.duration_min} onChange={handleChange} className={inputClass} />
-                    </div>
-                    <div>
-                        <label className={labelClass}>Date de sortie</label>
-                        <input name="release_date" type="date" value={form.release_date} onChange={handleChange} className={inputClass} />
-                    </div>
-                    <div className="col-span-2">
-                        <label className={labelClass}>Acteurs</label>
-                        <input name="actors" value={form.actors} onChange={handleChange} className={inputClass} />
-                    </div>
-                    <div className="col-span-2">
-                        <label className={labelClass}>Synopsis</label>
-                        <textarea name="synopsis" value={form.synopsis} onChange={handleChange} rows={4} className={inputClass} />
-                    </div>
-                    <div className="col-span-2">
-                        <label className={labelClass}>Affiche</label>
-                        {currentPoster && (
-                            <img
-                                src={`http://127.0.0.1:8000/storage/${currentPoster}`}
-                                alt="Affiche actuelle"
-                                className="w-16 h-24 object-cover rounded mb-2"
-                            />
-                        )}
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => setPosterFile(e.target.files[0])}
-                            className={inputClass}
-                        />
-                        <p className="text-xs text-gray-400 mt-1">Laisser vide pour conserver l'affiche actuelle.</p>
-                    </div>
-                </div>
-                <div className="flex gap-3 mt-6">
-                    <button type="submit" className="px-6 py-2 text-white text-sm font-medium rounded" style={{ background: 'var(--color-accent)' }}>
-                        Enregistrer
-                    </button>
-                    <Link to="/admin/films" className="px-6 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded">
-                        Annuler
-                    </Link>
-                </div>
-            </form>
         </AdminLayout>
     )
 }

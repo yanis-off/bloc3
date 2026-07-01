@@ -1,10 +1,20 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { Menu, X } from 'lucide-react'
+import { AdminThemeProvider, useAdminTheme } from '../context/AdminThemeProvider'
+import { Menu, X, Sun, Moon, ChevronDown } from 'lucide-react'
 
 function AdminLayout({ children }) {
+    return (
+        <AdminThemeProvider>
+            <AdminLayoutContent>{children}</AdminLayoutContent>
+        </AdminThemeProvider>
+    )
+}
+
+function AdminLayoutContent({ children }) {
     const { logout, user } = useAuth()
+    const { theme, toggleTheme } = useAdminTheme()
     const navigate = useNavigate()
     const location = useLocation()
     const [menuOpen, setMenuOpen] = useState(false)
@@ -17,6 +27,16 @@ function AdminLayout({ children }) {
         }
         document.addEventListener('mousedown', onClick)
         return () => document.removeEventListener('mousedown', onClick)
+    }, [])
+
+    // Close the mobile menu if the window is resized past the breakpoint
+    // where the inline nav reappears, so it can't get stuck open behind it.
+    useEffect(() => {
+        const onResize = () => {
+            if (window.innerWidth >= 768) setMobileOpen(false)
+        }
+        window.addEventListener('resize', onResize)
+        return () => window.removeEventListener('resize', onResize)
     }, [])
 
     const handleLogout = async () => {
@@ -36,150 +56,167 @@ function AdminLayout({ children }) {
     const isActive = (item) =>
         item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to)
 
-    const linkBase = {
-        textDecoration: 'none',
-        fontFamily: '"Inter", sans-serif',
-        fontSize: '0.95rem',
-        padding: '0.4rem 0',
-        position: 'relative',
-        transition: 'color 0.2s',
-    }
-
     return (
-        <div style={{ minHeight: '100vh', background: '#0f1729' }}>
-            <nav style={{
-                background: '#1a2238',
-                padding: '0 1.5rem',
-                height: '72px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                borderBottom: '1px solid rgba(255,255,255,0.05)',
-                position: 'sticky',
-                top: 0,
-                zIndex: 50,
-            }}>
+        <div
+            className="min-h-screen overflow-x-hidden font-sans"
+            style={{ backgroundColor: 'var(--admin-bg)', color: 'var(--admin-text)' }}
+        >
+            <nav
+                className="sticky top-0 z-50 flex h-[72px] items-center justify-between border-b px-4 sm:px-6"
+                style={{ backgroundColor: 'var(--admin-nav)', borderColor: 'var(--admin-border)' }}
+            >
                 {/* Logo */}
-                <div style={{ lineHeight: 1.1 }}>
-                    <div style={{
-                        color: 'white',
-                        fontFamily: '"Archivo Black", sans-serif',
-                        fontSize: '1.4rem',
-                        letterSpacing: '-0.05em',
-                    }}>BAOBAB</div>
-                    <div style={{
-                        color: '#9aafd4',
-                        fontFamily: '"Inter", sans-serif',
-                        fontWeight: 300,
-                        fontSize: '0.78rem',
-                        letterSpacing: '0.8em',
-                        marginTop: '2px',
-                    }}>CINÉMA</div>
+                <div className="shrink-0" style={{ lineHeight: 1.1 }}>
+                    <div
+                        style={{
+                            color: 'var(--admin-text)',
+                            fontFamily: '"Archivo Black", sans-serif',
+                            fontSize: '1.4rem',
+                            letterSpacing: '-0.05em',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        BAOBAB
+                    </div>
+                    <div
+                        style={{
+                            color: 'var(--admin-wordmark)',
+                            fontFamily: '"Inter", sans-serif',
+                            fontWeight: 300,
+                            fontSize: '0.78rem',
+                            letterSpacing: '0.8em',
+                            marginTop: '2px',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        CINÉMA
+                    </div>
                 </div>
 
-                {/* Nav links — caché sur mobile */}
-                <div className="hidden md:flex" style={{
-                    position: 'absolute',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    gap: '2.5rem',
-                    alignItems: 'center',
-                }}>
+                {/* Nav links — hidden on mobile, centered on desktop */}
+                <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-9 md:flex">
                     {navItems.map((item) => {
                         const active = isActive(item)
                         return (
-                            <Link key={item.to} to={item.to} style={{
-                                ...linkBase,
-                                color: active ? '#ffffff' : '#8a94a8',
-                                fontWeight: active ? 600 : 400,
-                            }}>
+                            <Link
+                                key={item.to}
+                                to={item.to}
+                                className="relative py-1.5 font-sans text-[0.95rem] transition-colors"
+                                style={{
+                                    color: active ? 'var(--admin-text)' : 'var(--admin-muted)',
+                                    fontWeight: active ? 600 : 400,
+                                }}
+                            >
                                 {item.label}
                                 {active && (
-                                    <span style={{
-                                        position: 'absolute',
-                                        left: 0, right: 0, bottom: '-4px',
-                                        height: '2px',
-                                        background: 'oklch(54.6% 0.245 262.881)',
-                                        borderRadius: '2px',
-                                    }} />
+                                    <span
+                                        className="absolute inset-x-0 -bottom-1 h-[2px] rounded-full"
+                                        style={{ backgroundColor: 'var(--admin-accent)' }}
+                                    />
                                 )}
                             </Link>
                         )
                     })}
                 </div>
 
-                {/* Droite : user menu + hamburger */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem' }}>
-                    {/* User menu — caché sur mobile */}
-                    <div className="hidden md:block" style={{ position: 'relative' }} ref={menuRef}>
-                        <button onClick={() => setMenuOpen((v) => !v)} style={{
-                            background: 'transparent', border: 'none', color: 'white',
-                            fontFamily: '"Inter", sans-serif', fontSize: '0.95rem',
-                            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem',
-                            padding: '0.4rem 0.6rem',
-                        }}>
+                {/* Right: theme toggle + user menu + hamburger */}
+                <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+                    <button
+                        type="button"
+                        onClick={toggleTheme}
+                        aria-label="Changer de thème"
+                        className="flex h-9 w-9 items-center justify-center rounded-full border transition-colors"
+                        style={{ borderColor: 'var(--admin-border)', color: 'var(--admin-text)' }}
+                    >
+                        {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+                    </button>
+
+                    {/* User menu — hidden on mobile */}
+                    <div className="relative hidden md:block" ref={menuRef}>
+                        <button
+                            onClick={() => setMenuOpen((v) => !v)}
+                            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2 font-sans text-[0.95rem] transition-colors"
+                            style={{ color: 'var(--admin-text)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                        >
                             {user?.first_name || 'Utilisateur'}
-                            <span style={{ fontSize: '0.7rem', transform: menuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
+                            <ChevronDown
+                                size={15}
+                                style={{
+                                    transition: 'transform 0.2s',
+                                    transform: menuOpen ? 'rotate(180deg)' : 'none',
+                                }}
+                            />
                         </button>
 
                         {menuOpen && (
-                            <div style={{
-                                position: 'absolute', top: 'calc(100% + 10px)', right: 0,
-                                background: '#2a3654', borderRadius: '8px', minWidth: '200px',
-                                boxShadow: '0 10px 30px rgba(0,0,0,0.4)', overflow: 'hidden', zIndex: 100,
-                            }}>
-                                <Link to="/admin/profile" onClick={() => setMenuOpen(false)} style={{
-                                    display: 'block', padding: '0.85rem 1.2rem', color: 'white',
-                                    textDecoration: 'none', fontFamily: '"Inter", sans-serif', fontSize: '0.95rem',
-                                }}>Profil</Link>
-                                <button onClick={handleLogout} style={{
-                                    display: 'block', width: '100%', textAlign: 'left',
-                                    padding: '0.85rem 1.2rem', background: 'transparent', border: 'none',
-                                    color: 'white', fontFamily: '"Inter", sans-serif', fontSize: '0.95rem', cursor: 'pointer',
-                                }}>Se déconnecter</button>
+                            <div
+                                className="absolute right-0 top-[calc(100%+10px)] z-[100] min-w-[200px] overflow-hidden rounded-lg border shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
+                                style={{ backgroundColor: 'var(--admin-surface2)', borderColor: 'var(--admin-border)' }}
+                            >
+                                <Link
+                                    to="/admin/profile"
+                                    onClick={() => setMenuOpen(false)}
+                                    className="block px-5 py-3.5 font-sans text-[0.95rem] transition-colors hover:opacity-80"
+                                    style={{ color: 'var(--admin-text)' }}
+                                >
+                                    Profil
+                                </Link>
+                                <button
+                                    onClick={handleLogout}
+                                    className="block w-full px-5 py-3.5 text-left font-sans text-[0.95rem] transition-colors hover:opacity-80"
+                                    style={{ color: 'var(--admin-text)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                                >
+                                    Se déconnecter
+                                </button>
                             </div>
                         )}
                     </div>
 
-                    {/* Hamburger — visible sur mobile */}
+                    {/* Hamburger — visible on mobile */}
                     <button
-                        className="md:hidden"
-                        onClick={() => setMobileOpen(v => !v)}
-                        style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '0.4rem' }}
+                        className="flex h-9 w-9 items-center justify-center md:hidden"
+                        onClick={() => setMobileOpen((v) => !v)}
+                        aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+                        aria-expanded={mobileOpen}
+                        style={{ background: 'transparent', border: 'none', color: 'var(--admin-text)', cursor: 'pointer' }}
                     >
                         {mobileOpen ? <X size={22} /> : <Menu size={22} />}
                     </button>
                 </div>
             </nav>
 
-            {/* Menu mobile */}
+            {/* Mobile menu */}
             {mobileOpen && (
-                <div className="md:hidden" style={{
-                    background: '#1a2238', borderBottom: '1px solid rgba(255,255,255,0.05)',
-                    padding: '1rem 2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem',
-                }}>
-                    {navItems.map(item => (
-                        <Link key={item.to} to={item.to}
+                <div
+                    className="flex flex-col gap-1 border-b px-5 py-3 md:hidden"
+                    style={{ backgroundColor: 'var(--admin-nav)', borderColor: 'var(--admin-border)' }}
+                >
+                    {navItems.map((item) => (
+                        <Link
+                            key={item.to}
+                            to={item.to}
                             onClick={() => setMobileOpen(false)}
+                            className="border-b py-3 font-sans text-[0.95rem] transition-colors"
                             style={{
-                                color: isActive(item) ? 'white' : '#8a94a8',
-                                textDecoration: 'none', padding: '0.6rem 0',
-                                fontFamily: '"Inter", sans-serif', fontSize: '0.95rem',
-                                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                                color: isActive(item) ? 'var(--admin-text)' : 'var(--admin-muted)',
+                                borderColor: 'var(--admin-border)',
                                 fontWeight: isActive(item) ? 600 : 400,
-                            }}>
+                            }}
+                        >
                             {item.label}
                         </Link>
                     ))}
-                    <button onClick={handleLogout} style={{
-                        background: 'transparent', border: 'none', color: '#8a94a8',
-                        textAlign: 'left', padding: '0.6rem 0', fontFamily: '"Inter", sans-serif',
-                        fontSize: '0.95rem', cursor: 'pointer', marginTop: '0.5rem',
-                    }}>Se déconnecter</button>
+                    <button
+                        onClick={handleLogout}
+                        className="py-3 text-left font-sans text-[0.95rem] transition-colors"
+                        style={{ color: 'var(--admin-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                    >
+                        Se déconnecter
+                    </button>
                 </div>
             )}
 
-            <main style={{ padding: '2rem', color: 'white' }}>
+            <main className="p-5 sm:p-8" style={{ color: 'var(--admin-text)' }}>
                 {children}
             </main>
         </div>

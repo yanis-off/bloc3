@@ -11,6 +11,8 @@ class Room extends Model
     protected $fillable = [
         'name',
         'capacity',
+        'format',
+        'price',
     ];
 
     public function screenings()

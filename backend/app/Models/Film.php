@@ -14,7 +14,9 @@ class Film extends Model
         'duration_min',
         'poster',
         'actors',
+        'director',
         'release_date',
+        'trailer_url',
         'status',
         'id_category',
     ];
