@@ -39,10 +39,16 @@ class AuthenticatedSessionController extends Controller
 
     public function destroy(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        // On vérifie si un jeton Sanctum est bien associé à la requête
+        if ($request->user() && $request->user()->currentAccessToken()) {
+            $request->user()->currentAccessToken()->delete();
+        } else {
+            // Sécurité pour le navigateur / sessions web standards si besoin
+            Auth::guard('web')->logout();
+        }
 
         return response()->json([
             'message' => 'Logged out successfully.'
-        ]);
+        ]); // Renvoie un statut 200 par défaut, ce qui correspond à nos tests mis à jour
     }
 }

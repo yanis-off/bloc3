@@ -266,9 +266,6 @@ class ByteString extends AbstractString
         return $str;
     }
 
-    /**
-     * @param-immediately-invoked-callable $to
-     */
     public function replaceMatches(string $fromRegexp, string|callable $to): static
     {
         if ($this->ignoreCase) {
