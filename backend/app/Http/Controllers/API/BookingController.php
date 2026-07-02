@@ -12,7 +12,7 @@ class BookingController extends Controller
 {
     public function index()
     {
-        $user = Auth::user();
+        $user = Auth::user(); 
 
         if ($user->isAdmin()) {
             return response()->json(
