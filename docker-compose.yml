@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # --- LE BACKEND LARAVEL ---
   backend:
@@ -12,11 +10,14 @@ services:
       - "8000:80"
     volumes:
       - ./backend:/var/www/html
+      - backend-vendor:/var/www/html/vendor # Empêche le vendor local (PHP hôte) d'écraser celui du conteneur
     environment:
       DB_HOST: db # Indique à Laravel de chercher le conteneur "db" au lieu de 127.0.0.1
       DB_PASSWORD: root
+      FRONTEND_URL: http://localhost:5173
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - cinema-network
 
@@ -40,12 +41,33 @@ services:
     image: mysql:8.0
     container_name: cinema-db
     ports:
-      - "3307:3306"
+      - "3308:3306" # 3307 était déjà pris sur la machine hôte
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: baobab_cinema 
+      MYSQL_DATABASE: baobab_cinema
     volumes:
       - cinema-db-data:/var/lib/mysql
+    networks:
+      - cinema-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # --- PHPMYADMIN ---
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: cinema-phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - cinema-network
 
@@ -55,3 +77,4 @@ networks:
 
 volumes:
   cinema-db-data:
+  backend-vendor:

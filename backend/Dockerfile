@@ -1,7 +1,10 @@
-FROM php:8.4-apache
+# --- ÉTAPE 1 : Base commune (PHP + extensions + composer) ---
+FROM php:8.4-apache AS base
 
 RUN apt-get update && apt-get install -y \
     git curl zip unzip libpng-dev libonig-dev libxml2-dev libpq-dev \
+    libjpeg62-turbo-dev libwebp-dev libfreetype6-dev \
+    && docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
     && docker-php-ext-install pdo pdo_pgsql pdo_mysql mbstring exif pcntl bcmath gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -9,23 +12,38 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-COPY . .
-
-RUN composer install --no-dev --optimize-autoloader
-
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-RUN a2enmod rewrite
-
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
+    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
+    && a2enmod rewrite \
+    && echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 80
-
 ENTRYPOINT ["docker-entrypoint.sh"]
+
+# --- ÉTAPE 2 : DÉVELOPPEMENT LOCAL ---
+# Le code est monté en volume par docker-compose.yml, donc on installe
+# juste les dépendances (avec les paquets dev : PHPUnit, etc.)
+FROM base AS development
+
+COPY composer.json composer.lock ./
+RUN composer install --no-scripts --no-autoloader
+
+COPY . .
+RUN composer dump-autoload \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+CMD ["apache2-foreground"]
+
+# --- ÉTAPE 3 : PRODUCTION ---
+# Ici le code est copié dans l'image (pas de volume), build optimisé
+FROM base AS production
+
+COPY . .
+RUN composer install --no-dev --optimize-autoloader \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
 CMD ["apache2-foreground"]

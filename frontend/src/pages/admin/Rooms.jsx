@@ -22,8 +22,13 @@ function Rooms() {
     useEffect(() => {
         const load = async () => {
             setLoading(true)
-            await fetchRooms()
-            setLoading(false)
+            try {
+                await fetchRooms()
+            } catch (err) {
+                setError(err.response?.data?.message || 'Impossible de charger les salles.')
+            } finally {
+                setLoading(false)
+            }
         }
         load()
     }, [])

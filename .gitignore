@@ -1,0 +1,16 @@
+# Node
+node_modules/
+dist/
+build/
+
+# PHP / Laravel
+backend/vendor/
+backend/.env
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Logs / audits (générés, pas commités)
+audits/*.log

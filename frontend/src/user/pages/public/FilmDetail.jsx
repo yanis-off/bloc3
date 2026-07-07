@@ -14,8 +14,6 @@ import ScreeningCard from "@/user/components/public/ScreeningCard";
 import { ReservationSidebar, MobileReserveBar } from "@/user/components/public/ReservationPanel";
 import { DEMO_FILM, DEMO_SCREENINGS } from "@/user/data/filmDetailDemo";
 
-const STORAGE_URL = "http://127.0.0.1:8000/storage/";
-
 export default function FilmDetail() {
   return (
     <ThemeProvider>
@@ -102,7 +100,7 @@ function FilmDetailContent() {
   const selectedScreening =
     sessionsForDate.find((s) => s.id_screening === selectedScreeningId) ?? null;
 
-  const posterUrl = film.poster ? `${STORAGE_URL}${film.poster}` : null;
+  const posterUrl = film.poster || null;
 
   const handleReserve = async () => {
     if (!selectedScreening) return;

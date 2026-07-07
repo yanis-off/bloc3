@@ -11,10 +11,9 @@ function FilmCreate() {
     const navigate = useNavigate()
     const [categories, setCategories] = useState([])
     const [error, setError] = useState('')
-    const [posterFile, setPosterFile] = useState(null)
     const [form, setForm] = useState({
         title: '', synopsis: '', duration_min: '', director: '',
-        actors: '', release_date: '', trailer_url: '', status: 'coming_soon', id_category: ''
+        actors: '', release_date: '', trailer_url: '', status: 'coming_soon', id_category: '', poster: ''
     })
 
     useEffect(() => {
@@ -33,14 +32,7 @@ function FilmCreate() {
         e.preventDefault()
         setError('')
         try {
-            const formData = new FormData()
-            Object.keys(form).forEach(key => {
-                if (form[key] !== '') formData.append(key, form[key])
-            })
-            if (posterFile) formData.append('poster', posterFile)
-            await api.post('/films', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            })
+            await api.post('/films', form)
             navigate('/admin/films')
         } catch (err) {
             setError(err.response?.data?.message || 'Erreur.')
@@ -127,7 +119,7 @@ function FilmCreate() {
                         </FormField>
 
                         <FormField label="Affiche" className="sm:col-span-2">
-                            <PosterUpload onChange={setPosterFile} />
+                            <PosterUpload currentPoster={form.poster} onChange={(url) => setForm({ ...form, poster: url })} />
                         </FormField>
                     </div>
 

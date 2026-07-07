@@ -1,8 +1,6 @@
 import { Link } from "react-router-dom";
 import { Star, ArrowRight } from "lucide-react";
 
-const STORAGE_URL = "http://127.0.0.1:8000/storage/";
-
 /**
  * Expected film shape (adjust to match your API serialization):
  * {
@@ -12,7 +10,7 @@ const STORAGE_URL = "http://127.0.0.1:8000/storage/";
  * }
  */
 export default function FilmCard({ film, onReserve }) {
-  const posterUrl = film.poster ? `${STORAGE_URL}${film.poster}` : null;
+  const posterUrl = film.poster || null;
 
   return (
     <Link

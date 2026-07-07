@@ -5,8 +5,6 @@ import AdminLayout from '../../../components/AdminLayout'
 import PageHeader from '../../../components/PageHeader'
 import api from '../../../api/axios'
 
-const STORAGE_URL = 'http://127.0.0.1:8000/storage/'
-
 function FilmShow() {
     const { id } = useParams()
     const navigate = useNavigate()
@@ -51,7 +49,7 @@ function FilmShow() {
                 >
                     {film.poster ? (
                         <img
-                            src={`${STORAGE_URL}${film.poster}`}
+                            src={film.poster}
                             alt={film.title}
                             className="w-full max-w-[200px] justify-self-center rounded-xl object-cover sm:justify-self-start"
                             style={{ aspectRatio: '2/3' }}

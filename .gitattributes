@@ -1,0 +1,6 @@
+# Force LF pour les fichiers exécutés par Linux/Docker,
+# même checkés out depuis Windows (évite l'erreur
+# "exec ...: no such file or directory" au démarrage des conteneurs)
+*.sh text eol=lf
+docker-entrypoint.sh text eol=lf
+Dockerfile text eol=lf

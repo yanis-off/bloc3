@@ -5,8 +5,6 @@ import AdminLayout from '../../../components/AdminLayout'
 import PageHeader from '../../../components/PageHeader'
 import api from '../../../api/axios'
 
-const STORAGE_URL = 'http://127.0.0.1:8000/storage/'
-
 function FilmsList() {
     const [films, setFilms] = useState([])
     const [loading, setLoading] = useState(true)
@@ -89,7 +87,7 @@ function FilmsList() {
                                     >
                                         {film.poster ? (
                                             <img
-                                                src={`${STORAGE_URL}${film.poster}`}
+                                                src={film.poster}
                                                 alt={film.title}
                                                 className="h-[72px] w-[52px] rounded-md object-cover"
                                                 style={{ border: '1px solid var(--admin-border)' }}

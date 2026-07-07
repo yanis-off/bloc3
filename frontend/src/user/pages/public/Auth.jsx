@@ -19,7 +19,7 @@ export default function Auth({ initialMode = "login" }) {
 
 function AuthContent({ initialMode }) {
   const navigate = useNavigate();
-  const { login, register, loading, isAdmin } = useAuth();
+  const { login, register, loading } = useAuth();
   const fromParam = new URLSearchParams(window.location.search).get("from");
   const [mode, setMode] = useState(initialMode); // "login" | "register"
 
@@ -72,9 +72,9 @@ function AuthContent({ initialMode }) {
     setApiError("");
     try {
       if (mode === "login") {
-        await login(vals.email, vals.password);
+        const data = await login(vals.email, vals.password);
         showToast("Connexion réussie !");
-        setTimeout(() => navigate(isAdmin() ? "/admin" : (fromParam || "/")), 800);
+        setTimeout(() => navigate(data.user?.role === "admin" ? "/admin" : (fromParam || "/")), 800);
       } else {
         await register({
           first_name: vals.firstName,

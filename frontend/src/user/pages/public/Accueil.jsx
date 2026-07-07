@@ -303,7 +303,7 @@ function AccueilContent() {
 }
 
 function Hero({ film, onWatchTrailer, onReserve }) {
-  const posterUrl = film.poster ? `http://127.0.0.1:8000/storage/${film.poster}` : null;
+  const posterUrl = film.poster || null;
 
   return (
     <header className="relative flex min-h-screen items-end overflow-hidden">

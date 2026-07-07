@@ -6,8 +6,6 @@ import Navbar from "@/user/components/public/Navbar";
 import Footer from "@/user/components/public/Footer";
 import api from "@/api/axios";
 
-const STORAGE_URL = "http://127.0.0.1:8000/storage/";
-
 const DOW  = ["Dim.", "Lun.", "Mar.", "Mer.", "Jeu.", "Ven.", "Sam."];
 const MONS = ["Jan.", "Fév.", "Mars", "Avr.", "Mai", "Juin",
               "Juil.", "Août", "Sep.", "Oct.", "Nov.", "Déc."];
@@ -274,7 +272,7 @@ function SeancesContent() {
                 {/* Poster */}
                 {film?.poster ? (
                   <img
-                    src={`${STORAGE_URL}${film.poster}`}
+                    src={film.poster}
                     alt={film.title}
                     className="h-[128px] w-[88px] shrink-0 rounded-[13px] object-cover"
                     style={{ border: "1px solid var(--border)" }}

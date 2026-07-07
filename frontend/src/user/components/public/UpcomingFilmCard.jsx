@@ -1,14 +1,12 @@
 import { Link } from "react-router-dom";
 import { Bell } from "lucide-react";
 
-const STORAGE_URL = "http://127.0.0.1:8000/storage/";
-
 /**
  * Expected film shape:
  * { id_film, title, poster, synopsis, release_date }
  */
 export default function UpcomingFilmCard({ film, onNotify }) {
-  const posterUrl = film.poster ? `${STORAGE_URL}${film.poster}` : null;
+  const posterUrl = film.poster || null;
 
   return (
     <Link

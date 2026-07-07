@@ -12,11 +12,9 @@ function FilmEdit() {
     const navigate = useNavigate()
     const [categories, setCategories] = useState([])
     const [error, setError] = useState('')
-    const [posterFile, setPosterFile] = useState(null)
-    const [currentPoster, setCurrentPoster] = useState(null)
     const [form, setForm] = useState({
         title: '', synopsis: '', duration_min: '', director: '',
-        actors: '', release_date: '', trailer_url: '', status: 'coming_soon', id_category: ''
+        actors: '', release_date: '', trailer_url: '', status: 'coming_soon', id_category: '', poster: ''
     })
 
     useEffect(() => {
@@ -26,7 +24,6 @@ function FilmEdit() {
                 api.get('/categories')
             ])
             const film = filmRes.data
-            setCurrentPoster(film.poster)
             setForm({
                 title: film.title,
                 synopsis: film.synopsis || '',
@@ -36,7 +33,8 @@ function FilmEdit() {
                 release_date: film.release_date || '',
                 trailer_url: film.trailer_url || '',
                 status: film.status,
-                id_category: film.id_category || ''
+                id_category: film.id_category || '',
+                poster: film.poster || ''
             })
             setCategories(catsRes.data)
         }
@@ -51,15 +49,7 @@ function FilmEdit() {
         e.preventDefault()
         setError('')
         try {
-            const formData = new FormData()
-            Object.keys(form).forEach(key => {
-                if (form[key] !== '') formData.append(key, form[key])
-            })
-            if (posterFile) formData.append('poster', posterFile)
-            formData.append('_method', 'PUT')
-            await api.post(`/films/${id}`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            })
+            await api.put(`/films/${id}`, form)
             navigate('/admin/films')
         } catch (err) {
             setError(err.response?.data?.message || 'Erreur.')
@@ -145,8 +135,8 @@ function FilmEdit() {
                             <textarea name="synopsis" value={form.synopsis} onChange={handleChange} rows={4} className={`${inputClass} resize-none`} style={inputStyle} />
                         </FormField>
 
-                        <FormField label="Affiche" hint="Laisser vide pour conserver l'affiche actuelle." className="sm:col-span-2">
-                            <PosterUpload currentPoster={currentPoster} onChange={setPosterFile} />
+                        <FormField label="Affiche" className="sm:col-span-2">
+                            <PosterUpload currentPoster={form.poster} onChange={(url) => setForm({ ...form, poster: url })} />
                         </FormField>
                     </div>
 
