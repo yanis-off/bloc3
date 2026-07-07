@@ -6,6 +6,8 @@ import Navbar from "@/user/components/public/Navbar";
 import Footer from "@/user/components/public/Footer";
 import api from "@/api/axios";
 
+import { resolvePosterUrl } from '@/lib/storage'
+
 const DOW  = ["Dim.", "Lun.", "Mar.", "Mer.", "Jeu.", "Ven.", "Sam."];
 const MONS = ["Jan.", "Fév.", "Mars", "Avr.", "Mai", "Juin",
               "Juil.", "Août", "Sep.", "Oct.", "Nov.", "Déc."];
@@ -272,7 +274,7 @@ function SeancesContent() {
                 {/* Poster */}
                 {film?.poster ? (
                   <img
-                    src={film.poster}
+                    src={resolvePosterUrl(film.poster)}
                     alt={film.title}
                     className="h-[128px] w-[88px] shrink-0 rounded-[13px] object-cover"
                     style={{ border: "1px solid var(--border)" }}

@@ -11,6 +11,7 @@ import PricingCard from "@/user/components/public/PricingCard";
 import CategoryFilter from "@/user/components/public/CategoryFilter";
 import TrailerModal from "@/user/components/public/TrailerModal";
 import Toast from "@/user/components/public/Toast";
+import { resolvePosterUrl } from "@/lib/storage";
 import {
   DEMO_NOW_SHOWING,
   DEMO_UPCOMING,
@@ -303,7 +304,7 @@ function AccueilContent() {
 }
 
 function Hero({ film, onWatchTrailer, onReserve }) {
-  const posterUrl = film.poster || null;
+  const posterUrl = resolvePosterUrl(film.poster);
 
   return (
     <header className="relative flex min-h-screen items-end overflow-hidden">

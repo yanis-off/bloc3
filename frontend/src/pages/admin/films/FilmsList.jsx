@@ -5,6 +5,8 @@ import AdminLayout from '../../../components/AdminLayout'
 import PageHeader from '../../../components/PageHeader'
 import api from '../../../api/axios'
 
+import { resolvePosterUrl } from '@/lib/storage'
+
 function FilmsList() {
     const [films, setFilms] = useState([])
     const [loading, setLoading] = useState(true)
@@ -87,7 +89,7 @@ function FilmsList() {
                                     >
                                         {film.poster ? (
                                             <img
-                                                src={film.poster}
+                                                src={resolvePosterUrl(film.poster)}
                                                 alt={film.title}
                                                 className="h-[72px] w-[52px] rounded-md object-cover"
                                                 style={{ border: '1px solid var(--admin-border)' }}

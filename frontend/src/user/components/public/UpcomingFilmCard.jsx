@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import { Bell } from "lucide-react";
 
+import { resolvePosterUrl } from '@/lib/storage'
+
 /**
  * Expected film shape:
  * { id_film, title, poster, synopsis, release_date }
  */
 export default function UpcomingFilmCard({ film, onNotify }) {
-  const posterUrl = film.poster || null;
+  const posterUrl = resolvePosterUrl(film.poster);
 
   return (
     <Link

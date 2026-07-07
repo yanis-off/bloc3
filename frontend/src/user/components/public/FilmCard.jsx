@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { Star, ArrowRight } from "lucide-react";
 
+import { resolvePosterUrl } from '@/lib/storage'
+
 /**
  * Expected film shape (adjust to match your API serialization):
  * {
@@ -10,7 +12,7 @@ import { Star, ArrowRight } from "lucide-react";
  * }
  */
 export default function FilmCard({ film, onReserve }) {
-  const posterUrl = film.poster || null;
+  const posterUrl = resolvePosterUrl(film.poster);
 
   return (
     <Link
