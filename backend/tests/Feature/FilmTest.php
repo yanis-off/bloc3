@@ -6,8 +6,6 @@ use App\Models\Category;
 use App\Models\Film;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class FilmTest extends TestCase
@@ -43,7 +41,6 @@ class FilmTest extends TestCase
 
     public function test_admin_can_create_a_film(): void
     {
-        Storage::fake('public');
         $admin    = User::factory()->create(['role' => 'admin']);
         $category = Category::factory()->create();
 
@@ -57,7 +54,7 @@ class FilmTest extends TestCase
                 'release_date' => '2025-06-01',
                 'status'       => 'showing',
                 'id_category'  => $category->id_category,
-                'poster'       => UploadedFile::fake()->image('poster.jpg'),
+                'poster'       => 'https://example.com/poster.jpg',
             ]);
 
         $response->assertStatus(201);

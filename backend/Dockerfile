@@ -30,6 +30,12 @@ ENTRYPOINT ["docker-entrypoint.sh"]
 # juste les dépendances (avec les paquets dev : PHPUnit, etc.)
 FROM base AS development
 
+# pcov : driver de couverture de code pour `php artisan test --coverage`
+RUN apt-get update && apt-get install -y $PHPIZE_DEPS \
+    && pecl install pcov \
+    && docker-php-ext-enable pcov \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 COPY composer.json composer.lock ./
 RUN composer install --no-scripts --no-autoloader
 
