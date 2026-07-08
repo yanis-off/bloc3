@@ -11,6 +11,6 @@ sed -i "s/<VirtualHost \*:80>/<VirtualHost *:${PORT}>/" /etc/apache2/sites-avail
 
 php artisan config:clear
 php artisan migrate --force
-php artisan storage:link 2>/dev/null || true
+php artisan storage:link --force 2>/dev/null || true
 
 exec "$@"
