@@ -17,6 +17,8 @@ FROM base AS builder
 # Railway doit donc passer VITE_API_URL comme build arg, pas comme simple env var de service.
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
+ARG VITE_SENTRY_DSN
+ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
 COPY . .
 RUN npm run build
 
