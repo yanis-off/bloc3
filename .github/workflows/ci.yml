@@ -85,3 +85,52 @@ jobs:
       - name: Audit des dependances JS (npm)
         working-directory: frontend
         run: npm audit --audit-level=high
+
+  # =========================================================
+  # JOB 3 : SCAN DES IMAGES DOCKER (Trivy)
+  # Detecte les CVE dans les images de base (php, nginx, node...).
+  # Bloque le pipeline uniquement sur les failles CRITICAL.
+  # =========================================================
+  docker-scan:
+    name: Scan des images Docker (Trivy)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recuperation du code
+        uses: actions/checkout@v4
+
+      # --- BACKEND ---
+      - name: Construction de l'image backend
+        run: docker build -t baobab-backend:scan --target production ./backend
+
+      - name: Scan Trivy de l'image backend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'baobab-backend:scan'
+          format: 'table'
+          severity: 'CRITICAL'
+          exit-code: '1'
+          ignore-unfixed: true
+
+      # --- FRONTEND ---
+      - name: Construction de l'image frontend
+        run: docker build -t baobab-frontend:scan --target production ./frontend
+
+      - name: Scan Trivy de l'image frontend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'baobab-frontend:scan'
+          format: 'table'
+          severity: 'CRITICAL'
+          exit-code: '1'
+          ignore-unfixed: true
+
+      # --- Rapport complet (informatif, non bloquant) ---
+      - name: Rapport complet des vulnerabilites (backend)
+        if: always()
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'baobab-backend:scan'
+          format: 'table'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          exit-code: '0'
