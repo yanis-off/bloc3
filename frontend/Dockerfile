@@ -1,5 +1,5 @@
 # --- ÉTAPE 1 : Base commune pour installer les modules Node ---
-FROM node:20-alpine AS base
+FROM node:26-alpine AS base
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
