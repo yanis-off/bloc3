@@ -1,0 +1,52 @@
+# Dependabot : surveillance continue des dépendances.
+# Ouvre automatiquement une Pull Request dès qu'une mise à jour de sécurité
+# ou une nouvelle version est disponible. Complète les audits ponctuels
+# (npm audit / composer audit) déjà présents dans le pipeline CI.
+version: 2
+
+updates:
+  # --- Dépendances PHP du backend (Composer) ---
+  - package-ecosystem: "composer"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "backend"
+
+  # --- Dépendances JavaScript du frontend (npm) ---
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "frontend"
+
+  # --- Images de base Docker (backend + frontend) ---
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # --- Actions GitHub utilisées dans le pipeline CI ---
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "ci"
