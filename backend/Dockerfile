@@ -1,5 +1,5 @@
 # --- ÉTAPE 1 : Base commune (PHP + extensions + composer) ---
-FROM php:8.4-apache AS base
+FROM php:8.5-apache AS base
 
 RUN apt-get update && apt-get install -y \
     git curl zip unzip libpng-dev libonig-dev libxml2-dev libpq-dev \
