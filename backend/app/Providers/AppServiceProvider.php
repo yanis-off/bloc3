@@ -12,7 +12,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Telescope (laravel/telescope) est une dependance "require-dev" :
+        // en production, composer install --no-dev ne l'installe pas.
+        // On ne l'enregistre donc que si la classe existe reellement,
+        // pour ne jamais casser le build production.
+        if (class_exists(\Laravel\Telescope\TelescopeApplicationServiceProvider::class)) {
+            $this->app->register(\App\Providers\TelescopeServiceProvider::class);
+        }
     }
 
     /**
