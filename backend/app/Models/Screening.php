@@ -5,7 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-
+/**
+ * @property int $id_screening
+ * @property string $date
+ * @property string $time
+ * @property int $seats_remaining
+ * @property int $id_film
+ * @property int $id_room
+ * @property-read \App\Models\Film $film
+ * @property-read \App\Models\Room $room
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Booking> $bookings
+ */
 class Screening extends Model
 {
     use HasFactory;

@@ -74,7 +74,7 @@ function AccueilContent() {
         }
         if (comingSoon.length) setUpcoming(comingSoon);
       })
-      .catch(() => {});
+      .catch(() => { });
 
     api
       .get("/categories")
@@ -82,7 +82,7 @@ function AccueilContent() {
         const cats = res.data?.data ?? res.data ?? [];
         if (cats.length) setCategories(["Tous", ...cats.map((c) => c.name)]);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const filteredNowShowing = useMemo(() => {
@@ -96,6 +96,7 @@ function AccueilContent() {
       className="relative min-h-screen overflow-x-hidden font-sans"
       style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}
     >
+
       <Navbar />
 
       <Hero

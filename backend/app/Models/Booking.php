@@ -5,6 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id_booking
+ * @property int $seats_count
+ * @property string $status
+ * @property \Illuminate\Support\Carbon|null $expires_at
+ * @property int $id_user
+ * @property int $id_screening
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property-read \App\Models\User $user
+ * @property-read \App\Models\Screening $screening
+ *
+ * @method static \Database\Factories\BookingFactory factory($count = null, $state = [])
+ */
 class Booking extends Model
 {
     use HasFactory;
