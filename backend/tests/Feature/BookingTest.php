@@ -133,6 +133,41 @@ class BookingTest extends TestCase
         $this->assertCount(2, $response->json());
     }
 
+    // ── View (show) ──────────────────────────────────────────────────────────
+
+    public function test_user_can_view_own_booking(): void
+    {
+        $user    = User::factory()->create();
+        $booking = Booking::factory()->create(['id_user' => $user->id]);
+
+        $this->actingAs($user, 'sanctum')
+             ->getJson("/api/bookings/{$booking->id_booking}")
+             ->assertStatus(200)
+             ->assertJsonPath('id_booking', $booking->id_booking);
+    }
+
+    public function test_user_cannot_view_another_users_booking(): void
+    {
+        $user1   = User::factory()->create();
+        $user2   = User::factory()->create();
+        $booking = Booking::factory()->create(['id_user' => $user2->id]);
+
+        $this->actingAs($user1, 'sanctum')
+             ->getJson("/api/bookings/{$booking->id_booking}")
+             ->assertStatus(403);
+    }
+
+    public function test_admin_can_view_any_booking(): void
+    {
+        $admin   = User::factory()->create(['role' => 'admin']);
+        $user    = User::factory()->create();
+        $booking = Booking::factory()->create(['id_user' => $user->id]);
+
+        $this->actingAs($admin, 'sanctum')
+             ->getJson("/api/bookings/{$booking->id_booking}")
+             ->assertStatus(200);
+    }
+
     // ── Cancel (destroy) ──────────────────────────────────────────────────────
 
     public function test_user_can_cancel_own_booking_and_seats_are_restored(): void

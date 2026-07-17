@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Screening;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,7 +13,8 @@ class BookingController extends Controller
 {
     public function index()
     {
-        $user = Auth::user(); 
+        /** @var User $user */
+        $user = Auth::user();
 
         if ($user->isAdmin()) {
             return response()->json(
@@ -66,6 +68,13 @@ class BookingController extends Controller
 
     public function show(Booking $booking)
     {
+        /** @var User $user */
+        $user = Auth::user();
+
+        if ($booking->id_user !== $user->id && !$user->isAdmin()) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
         return response()->json($booking->load(['screening.film', 'screening.room']));
     }
 
@@ -90,7 +99,10 @@ class BookingController extends Controller
 
     public function destroy(Booking $booking)
     {
-        if ($booking->id_user !== Auth::id() && !Auth::user()->isAdmin()) {
+        /** @var User $user */
+        $user = Auth::user();
+
+        if ($booking->id_user !== $user->id && !$user->isAdmin()) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
