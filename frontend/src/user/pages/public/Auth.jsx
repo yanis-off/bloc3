@@ -360,14 +360,25 @@ function AuthContent({ initialMode }) {
 
 // ─── floating label field ─────────────────────────────────────────────────────
 
-function FloatingField({ label, type = "text", value, onChange, error, children, autoComplete }) {
+function slugify(str) {
+  return str
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function FloatingField({ label, type = "text", value, onChange, error, children, autoComplete, id: idProp }) {
   const [focused, setFocused] = useState(false);
   const floated = focused || value !== "";
+  const id = idProp || `field-${slugify(label)}`;
+  const errorId = error ? `${id}-error` : undefined;
 
   return (
     <div>
       <div style={{ position: "relative" }}>
         <input
+          id={id}
           type={type}
           value={value}
           onChange={onChange}
@@ -375,6 +386,8 @@ function FloatingField({ label, type = "text", value, onChange, error, children,
           onBlur={() => setFocused(false)}
           autoComplete={autoComplete}
           placeholder=" "
+          aria-invalid={!!error}
+          aria-describedby={errorId}
           style={{
             width: "100%",
             background: "var(--surface2, #121A3C)",
@@ -394,6 +407,7 @@ function FloatingField({ label, type = "text", value, onChange, error, children,
           }}
         />
         <label
+          htmlFor={id}
           style={{
             position: "absolute",
             left: 16,
@@ -410,16 +424,16 @@ function FloatingField({ label, type = "text", value, onChange, error, children,
         </label>
         {children}
       </div>
-      {error && <ErrorMsg>{error}</ErrorMsg>}
+      {error && <ErrorMsg id={errorId}>{error}</ErrorMsg>}
     </div>
   );
 }
 
 // ─── error message ────────────────────────────────────────────────────────────
 
-function ErrorMsg({ children }) {
+function ErrorMsg({ children, id }) {
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 8, marginLeft: 2, fontSize: 12.5, color: "#E08A7D" }}>
+    <span id={id} role="alert" style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 8, marginLeft: 2, fontSize: 12.5, color: "#E08A7D" }}>
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
         <circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>
       </svg>
