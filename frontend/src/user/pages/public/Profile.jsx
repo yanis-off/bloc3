@@ -53,6 +53,12 @@ function ProfileContent() {
   const [pwErrors, setPwErrors] = useState({});
   const [pwSaving, setPwSaving] = useState(false);
 
+  // delete account
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePw, setDeletePw] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
   // toast
   const [toast, setToast] = useState("");
 
@@ -166,6 +172,27 @@ function ProfileContent() {
       });
     } finally {
       setPwSaving(false);
+    }
+  };
+
+  // ── delete account ───────────────────────────────────────────────────────
+
+  const deleteAccount = async () => {
+    if (!deletePw) {
+      setDeleteError("Veuillez saisir votre mot de passe pour confirmer.");
+      return;
+    }
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      await api.delete("/user", { data: { current_password: deletePw } });
+      navigate("/"); // navigate first — PrivateRoute never triggers
+      await logout();
+    } catch (err) {
+      setDeleteError(
+        err?.response?.data?.message || "Erreur. Vérifiez votre mot de passe."
+      );
+      setDeleting(false);
     }
   };
 
@@ -584,6 +611,64 @@ function ProfileContent() {
                     {pwSaving ? "Mise à jour…" : "Mettre à jour"}
                   </button>
                 </form>
+              </div>
+            )}
+
+            {/* ── Zone de danger : suppression de compte ── */}
+            {tab === "securite" && (
+              <div
+                className="mt-6 max-w-[520px] rounded-[20px] border p-8"
+                style={{ backgroundColor: "var(--surface)", borderColor: "rgba(224,138,125,.35)" }}
+              >
+                <h2 className="mb-1.5 font-['Sora'] text-[18px] font-semibold" style={{ color: "#E08A7D" }}>
+                  Supprimer mon compte
+                </h2>
+                <p className="mb-5 text-[13.5px]" style={{ color: "rgba(221,230,240,.55)" }}>
+                  Cette action est définitive. Vos informations personnelles (nom, e-mail)
+                  seront effacées. Vos réservations passées sont conservées de façon anonyme
+                  à des fins de suivi, sans pouvoir être reliées à votre identité.
+                </p>
+
+                {!showDeleteConfirm ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="rounded-xl px-6 py-3 text-[14px] font-semibold transition-all"
+                    style={{ backgroundColor: "rgba(224,138,125,.14)", color: "#E08A7D", border: "1px solid rgba(224,138,125,.4)" }}
+                  >
+                    Supprimer mon compte
+                  </button>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    <PwField
+                      label="Confirmez avec votre mot de passe"
+                      value={deletePw}
+                      autoComplete="current-password"
+                      onChange={(v) => { setDeletePw(v); setDeleteError(""); }}
+                      error={deleteError}
+                    />
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={deleteAccount}
+                        disabled={deleting}
+                        className="rounded-xl px-6 py-3 text-[14px] font-semibold text-white transition-all disabled:opacity-60"
+                        style={{ backgroundColor: "#E08A7D", border: "none" }}
+                      >
+                        {deleting ? "Suppression…" : "Confirmer la suppression"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowDeleteConfirm(false); setDeletePw(""); setDeleteError(""); }}
+                        disabled={deleting}
+                        className="rounded-xl px-6 py-3 text-[14px] font-semibold transition-all"
+                        style={{ backgroundColor: "transparent", color: "var(--muted)", border: "1px solid var(--border)" }}
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </section>
