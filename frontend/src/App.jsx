@@ -6,6 +6,8 @@ import FilmDetail from './user/pages/public/FilmDetail'
 import Auth from './user/pages/public/Auth'
 import Profile from './user/pages/public/Profile'
 import Seances from './user/pages/public/Seances'
+import ConditionsUtilisation from './user/pages/public/ConditionsUtilisation'
+import PolitiqueConfidentialite from './user/pages/public/PolitiqueConfidentialite'
 import Dashboard from './pages/admin/Dashboard'
 import Categories from './pages/admin/Categories'
 import Rooms from './pages/admin/Rooms'
@@ -35,6 +37,9 @@ function App() {
         <Route path="/inscription" element={<Auth initialMode="register" />} />
 
         <Route path="/profil" element={<PrivateRoute><Profile /></PrivateRoute>} />
+
+        <Route path="/conditions" element={<ConditionsUtilisation />} />
+        <Route path="/confidentialite" element={<PolitiqueConfidentialite />} />
 
         
 
