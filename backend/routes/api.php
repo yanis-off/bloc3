@@ -24,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/bookings/{booking}', [BookingController::class, 'destroy']);
     Route::put('/user', [UserController::class, 'update']);
     Route::put('/user/password', [UserController::class, 'updatePassword']);
+    Route::delete('/user', [UserController::class, 'destroy']);
 });
 
 // Routes admin uniquement
