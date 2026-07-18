@@ -65,6 +65,43 @@ class BookingTest extends TestCase
              ])->assertStatus(422);
     }
 
+    public function test_cannot_overbook_a_screening_down_to_the_last_seat(): void
+    {
+        // Regression P1-03 : sans transaction + verrou, deux reservations
+        // qui lisent seats_remaining avant que l'une des deux ne le decremente
+        // pouvaient toutes les deux passer, menant a un seats_remaining negatif.
+        // Ce test verifie le scenario sequentiel equivalent : une fois la
+        // capacite epuisee par une premiere reservation, la suivante doit
+        // etre refusee meme si elle demande une seule place.
+        $user1     = User::factory()->create(['role' => 'user']);
+        $user2     = User::factory()->create(['role' => 'user']);
+        $screening = Screening::factory()->create(['seats_remaining' => 1]);
+
+        $this->actingAs($user1, 'sanctum')
+             ->postJson('/api/bookings', [
+                 'id_screening' => $screening->id_screening,
+                 'seats_count'  => 1,
+             ])->assertStatus(201);
+
+        $this->actingAs($user2, 'sanctum')
+             ->postJson('/api/bookings', [
+                 'id_screening' => $screening->id_screening,
+                 'seats_count'  => 1,
+             ])->assertStatus(422);
+
+        $this->assertDatabaseHas('screenings', [
+            'id_screening'    => $screening->id_screening,
+            'seats_remaining' => 0,
+        ]);
+
+        // Une seule reservation doit exister, jamais deux places vendues
+        // pour une seule place disponible.
+        $this->assertEquals(
+            1,
+            Booking::where('id_screening', $screening->id_screening)->count()
+        );
+    }
+
     public function test_guest_cannot_create_booking(): void
     {
         $screening = Screening::factory()->create();
