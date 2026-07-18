@@ -11,7 +11,7 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
 {
-    $response = $this->postJson('/register', [ // Utilisation de postJson pour les APIs
+    $response = $this->postJson('/api/register', [ // Utilisation de postJson pour les APIs
         'first_name' => 'Test',
         'last_name' => 'User',
         'email' => 'test@example.com',
@@ -21,7 +21,7 @@ class RegistrationTest extends TestCase
 
     // On vérifie le statut 201 créé par le contrôleur
     $response->assertStatus(201);
-    
+
     // On s'assure que le token et la structure de l'utilisateur sont bien renvoyés
     $response->assertJsonStructure([
         'token',
