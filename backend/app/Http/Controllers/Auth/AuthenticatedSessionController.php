@@ -3,24 +3,19 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AuthenticatedSessionController extends Controller
 {
-    public function store(Request $request)
+    public function store(LoginRequest $request)
     {
-        $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required',
-        ]);
-
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            return response()->json([
-                'message' => 'Invalid credentials.'
-            ], 401);
-        }
+        // authenticate() applique le rate limiting (5 tentatives par email+IP)
+        // deja implemente dans LoginRequest, et leve une ValidationException
+        // (422) en cas d'identifiants invalides ou de trop nombreuses tentatives.
+        $request->authenticate();
 
         $user  = Auth::user();
         $token = $user->createToken('auth_token')->plainTextToken;
