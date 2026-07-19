@@ -62,7 +62,7 @@ class CategoryTest extends TestCase
              ->deleteJson("/api/categories/{$category->id_category}")
              ->assertStatus(204);
 
-        $this->assertDatabaseMissing('categories', ['id_category' => $category->id_category]);
+        $this->assertSoftDeleted('categories', ['id_category' => $category->id_category]);
     }
 
     public function test_regular_user_cannot_create_category(): void

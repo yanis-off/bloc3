@@ -123,7 +123,7 @@ class ScreeningTest extends TestCase
              ->deleteJson("/api/screenings/{$screening->id_screening}")
              ->assertStatus(204);
 
-        $this->assertDatabaseMissing('screenings', ['id_screening' => $screening->id_screening]);
+        $this->assertSoftDeleted('screenings', ['id_screening' => $screening->id_screening]);
     }
 
     // ── Authorization ─────────────────────────────────────────────────────────

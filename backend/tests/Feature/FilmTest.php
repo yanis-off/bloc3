@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Film;
+use App\Models\Screening;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -84,7 +85,38 @@ class FilmTest extends TestCase
              ->deleteJson("/api/films/{$film->id_film}")
              ->assertStatus(204);
 
-        $this->assertDatabaseMissing('films', ['id_film' => $film->id_film]);
+        // Soft delete : la ligne existe toujours en base (deleted_at renseigne),
+        // elle disparait seulement des requetes/listes par defaut.
+        $this->assertSoftDeleted('films', ['id_film' => $film->id_film]);
+    }
+
+    public function test_deleting_a_film_does_not_cascade_delete_its_screenings(): void
+    {
+        // Regression : avant l'ajout du Soft Delete, supprimer un film
+        // supprimait silencieusement en cascade ses seances (et leurs
+        // reservations), via la contrainte cascadeOnDelete() en base.
+        // Le Soft Delete remplace le DELETE SQL par un simple UPDATE
+        // (deleted_at), qui ne declenche plus cette cascade.
+        $admin     = User::factory()->create(['role' => 'admin']);
+        $film      = Film::factory()->create();
+        $screening = Screening::factory()->create(['id_film' => $film->id_film]);
+
+        $this->actingAs($admin, 'sanctum')
+             ->deleteJson("/api/films/{$film->id_film}")
+             ->assertStatus(204);
+
+        $this->assertDatabaseHas('screenings', ['id_screening' => $screening->id_screening]);
+    }
+
+    public function test_deleted_film_does_not_appear_in_public_list(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $film  = Film::factory()->create();
+
+        $this->actingAs($admin, 'sanctum')->deleteJson("/api/films/{$film->id_film}");
+
+        $response = $this->getJson('/api/films');
+        $response->assertJsonMissing(['id_film' => $film->id_film]);
     }
 
     // ── Authorization ─────────────────────────────────────────────────────────

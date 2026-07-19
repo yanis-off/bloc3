@@ -84,6 +84,6 @@ class RoomTest extends TestCase
              ->deleteJson("/api/rooms/{$room->id_room}")
              ->assertStatus(204);
 
-        $this->assertDatabaseMissing('rooms', ['id_room' => $room->id_room]);
+        $this->assertSoftDeleted('rooms', ['id_room' => $room->id_room]);
     }
 }
