@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Http\Request;
 
@@ -10,7 +11,7 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        return response()->json(Category::all());
+        return CategoryResource::collection(Category::all());
     }
 
     public function store(Request $request)
@@ -21,12 +22,14 @@ class CategoryController extends Controller
 
         $category = Category::create($validated);
 
-        return response()->json($category, 201);
+        return (new CategoryResource($category))
+            ->response()
+            ->setStatusCode(201);
     }
 
     public function show(Category $category)
     {
-        return response()->json($category);
+        return new CategoryResource($category);
     }
 
     public function update(Request $request, Category $category)
@@ -37,7 +40,7 @@ class CategoryController extends Controller
 
         $category->update($validated);
 
-        return response()->json($category);
+        return new CategoryResource($category);
     }
 
     public function destroy(Category $category)

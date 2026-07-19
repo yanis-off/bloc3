@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ScreeningResource;
 use App\Models\Screening;
 use Illuminate\Http\Request;
 
@@ -10,7 +11,7 @@ class ScreeningController extends Controller
 {
     public function index()
     {
-        return response()->json(
+        return ScreeningResource::collection(
             Screening::with(['film', 'room'])->get()
         );
     }
@@ -27,12 +28,14 @@ class ScreeningController extends Controller
 
         $screening = Screening::create($validated);
 
-        return response()->json($screening->load(['film', 'room']), 201);
+        return (new ScreeningResource($screening->load(['film', 'room'])))
+            ->response()
+            ->setStatusCode(201);
     }
 
     public function show(Screening $screening)
     {
-        return response()->json($screening->load(['film', 'room']));
+        return new ScreeningResource($screening->load(['film', 'room']));
     }
 
     public function update(Request $request, Screening $screening)
@@ -47,7 +50,7 @@ class ScreeningController extends Controller
 
         $screening->update($validated);
 
-        return response()->json($screening->load(['film', 'room']));
+        return new ScreeningResource($screening->load(['film', 'room']));
     }
 
     public function destroy(Screening $screening)

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\FilmResource;
 use App\Models\Film;
 use Illuminate\Http\Request;
 
@@ -10,7 +11,7 @@ class FilmController extends Controller
 {
     public function index()
     {
-        return response()->json(
+        return FilmResource::collection(
             Film::with('category')->get()
         );
     }
@@ -32,12 +33,14 @@ class FilmController extends Controller
 
         $film = Film::create($validated);
 
-        return response()->json($film->load('category'), 201);
+        return (new FilmResource($film->load('category')))
+            ->response()
+            ->setStatusCode(201);
     }
 
     public function show(Film $film)
     {
-        return response()->json($film->load('category'));
+        return new FilmResource($film->load('category'));
     }
 
     public function update(Request $request, Film $film)
@@ -57,7 +60,7 @@ class FilmController extends Controller
 
         $film->update($validated);
 
-        return response()->json($film->load('category'));
+        return new FilmResource($film->load('category'));
     }
 
     public function destroy(Film $film)

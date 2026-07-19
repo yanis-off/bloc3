@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BookingResource;
 use App\Models\Booking;
 use App\Models\Screening;
 use App\Models\User;
@@ -18,12 +19,12 @@ class BookingController extends Controller
         $user = Auth::user();
 
         if ($user->isAdmin()) {
-            return response()->json(
+            return BookingResource::collection(
                 Booking::with(['user', 'screening.film', 'screening.room'])->get()
             );
         }
 
-        return response()->json(
+        return BookingResource::collection(
             Booking::with(['screening.film', 'screening.room'])
                 ->where('id_user', $user->id)
                 ->get()
@@ -38,10 +39,6 @@ class BookingController extends Controller
         ]);
 
         return DB::transaction(function () use ($validated) {
-            // Verrou pessimiste : bloque la ligne screening jusqu'a la fin de la
-            // transaction. Empeche deux requetes concurrentes de lire le meme
-            // seats_remaining avant que l'une d'elles ne le decremente
-            // (race condition -> sur-reservation).
             $screening = Screening::where('id_screening', $validated['id_screening'])
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -71,7 +68,9 @@ class BookingController extends Controller
 
             $screening->decrement('seats_remaining', $validated['seats_count']);
 
-            return response()->json($booking->load(['screening.film', 'screening.room']), 201);
+            return (new BookingResource($booking->load(['screening.film', 'screening.room'])))
+                ->response()
+                ->setStatusCode(201);
         });
     }
 
@@ -84,7 +83,7 @@ class BookingController extends Controller
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
-        return response()->json($booking->load(['screening.film', 'screening.room']));
+        return new BookingResource($booking->load(['screening.film', 'screening.room']));
     }
 
     public function update(Request $request, Booking $booking)
@@ -103,7 +102,7 @@ class BookingController extends Controller
             $booking->screening->increment('seats_remaining', $booking->seats_count);
         }
 
-        return response()->json($booking->load(['screening.film', 'screening.room']));
+        return new BookingResource($booking->load(['screening.film', 'screening.room']));
     }
 
     public function destroy(Booking $booking)

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\RoomResource;
 use App\Models\Room;
 use Illuminate\Http\Request;
 
@@ -10,7 +11,7 @@ class RoomController extends Controller
 {
     public function index()
     {
-        return response()->json(Room::all());
+        return RoomResource::collection(Room::all());
     }
 
     public function store(Request $request)
@@ -24,12 +25,14 @@ class RoomController extends Controller
 
         $room = Room::create($validated);
 
-        return response()->json($room, 201);
+        return (new RoomResource($room))
+            ->response()
+            ->setStatusCode(201);
     }
 
     public function show(Room $room)
     {
-        return response()->json($room);
+        return new RoomResource($room);
     }
 
     public function update(Request $request, Room $room)
@@ -43,7 +46,7 @@ class RoomController extends Controller
 
         $room->update($validated);
 
-        return response()->json($room);
+        return new RoomResource($room);
     }
 
     public function destroy(Room $room)

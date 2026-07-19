@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\ServiceProvider;
 
 
@@ -27,6 +28,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Les API Resources (app/Http/Resources) enveloppent par defaut leur
+        // reponse dans une cle "data" ({"data": {...}}). Le frontend existant
+        // consomme deja les reponses JSON brutes (tableau ou objet direct),
+        // donc on desactive ce wrapping pour ne pas changer le format de
+        // reponse en introduisant les Resources (corrige P1-09 sans casser
+        // le frontend).
+        JsonResource::withoutWrapping();
+
         ResetPassword::createUrlUsing(function (object $notifiable, string $token) {
             return config('app.frontend_url')."/password-reset/$token?email={$notifiable->getEmailForPasswordReset()}";
         });
