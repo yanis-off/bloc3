@@ -72,7 +72,10 @@ function SeancesContent() {
 
   useEffect(() => {
     setLoading(true);
-    api.get("/screenings")
+    // per_page=200 : vue calendrier qui groupe/filtre cote client par
+    // date et par film - une pagination "page suivante" ne correspond
+    // pas a cette navigation, on demande donc une fenetre large.
+    api.get("/screenings?per_page=200")
       .then((res) => setScreenings(res.data?.data ?? res.data ?? []))
       .catch(() => {})
       .finally(() => setLoading(false));

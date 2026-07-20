@@ -151,7 +151,7 @@ class BookingTest extends TestCase
                          ->getJson('/api/bookings')
                          ->assertStatus(200);
 
-        $this->assertCount(2, $response->json());
+        $this->assertCount(2, $response->json('data'));
     }
 
     public function test_admin_sees_all_bookings(): void
@@ -167,7 +167,24 @@ class BookingTest extends TestCase
                          ->getJson('/api/bookings')
                          ->assertStatus(200);
 
-        $this->assertCount(2, $response->json());
+        $this->assertCount(2, $response->json('data'));
+    }
+
+    public function test_bookings_list_is_paginated(): void
+    {
+        // Regression P1-10 : /api/bookings doit etre pagine (payload
+        // borne meme si le volume de reservations augmente), avec les
+        // metadonnees de pagination exposees.
+        $user = User::factory()->create();
+        Booking::factory()->count(20)->create(['id_user' => $user->id]);
+
+        $response = $this->actingAs($user, 'sanctum')
+                         ->getJson('/api/bookings?per_page=5')
+                         ->assertStatus(200);
+
+        $this->assertCount(5, $response->json('data'));
+        $this->assertSame(20, $response->json('meta.total'));
+        $this->assertSame(4, $response->json('meta.last_page'));
     }
 
     // ── View (show) ──────────────────────────────────────────────────────────

@@ -2,15 +2,19 @@ import { useState, useEffect } from 'react'
 import { Check, X, Trash2, Ticket } from 'lucide-react'
 import AdminLayout from '../../components/AdminLayout'
 import PageHeader from '../../components/PageHeader'
+import AdminPagination from '../../components/AdminPagination'
 import api from '../../api/axios'
 
 function BookingsList() {
     const [bookings, setBookings] = useState([])
+    const [meta, setMeta] = useState(null)
+    const [page, setPage] = useState(1)
     const [loading, setLoading] = useState(true)
 
     const fetchBookings = async () => {
-        const res = await api.get('/bookings')
-        setBookings(res.data)
+        const res = await api.get(`/bookings?page=${page}`)
+        setBookings(res.data?.data ?? res.data ?? [])
+        setMeta(res.data?.meta ?? null)
     }
 
     useEffect(() => {
@@ -20,7 +24,7 @@ function BookingsList() {
             setLoading(false)
         }
         load()
-    }, [])
+    }, [page])
 
     const handleStatus = async (id, status) => {
         await api.put(`/bookings/${id}`, { status })
@@ -163,6 +167,7 @@ function BookingsList() {
                             })
                         )}
                     </div>
+                    <AdminPagination meta={meta} onPageChange={setPage} />
                 </div>
             </div>
         </AdminLayout>

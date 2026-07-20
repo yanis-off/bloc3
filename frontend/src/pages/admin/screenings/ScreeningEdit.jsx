@@ -20,8 +20,8 @@ function ScreeningEdit() {
         const load = async () => {
             const [screeningRes, filmsRes, roomsRes] = await Promise.all([
                 api.get(`/screenings/${id}`),
-                api.get('/films'),
-                api.get('/rooms')
+                api.get('/films?per_page=100'),
+                api.get('/rooms?per_page=100')
             ])
             const s = screeningRes.data
             setForm({
@@ -31,8 +31,8 @@ function ScreeningEdit() {
                 time: s.time,
                 seats_remaining: s.seats_remaining
             })
-            setFilms(filmsRes.data)
-            setRooms(roomsRes.data)
+            setFilms(filmsRes.data?.data ?? filmsRes.data ?? [])
+            setRooms(roomsRes.data?.data ?? roomsRes.data ?? [])
         }
         load()
     }, [id])

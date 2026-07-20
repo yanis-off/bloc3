@@ -17,12 +17,14 @@ function ScreeningCreate() {
 
     useEffect(() => {
         const load = async () => {
+            // per_page=100 : ce sont des listes deroulantes, il faut TOUS
+            // les films/salles, pas seulement la 1ere page paginee.
             const [filmsRes, roomsRes] = await Promise.all([
-                api.get('/films'),
-                api.get('/rooms')
+                api.get('/films?per_page=100'),
+                api.get('/rooms?per_page=100')
             ])
-            setFilms(filmsRes.data)
-            setRooms(roomsRes.data)
+            setFilms(filmsRes.data?.data ?? filmsRes.data ?? [])
+            setRooms(roomsRes.data?.data ?? roomsRes.data ?? [])
         }
         load()
     }, [])

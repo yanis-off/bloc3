@@ -75,7 +75,11 @@ function ProfileContent() {
   useEffect(() => {
     setBookingsLoading(true);
     api
-      .get("/bookings")
+      // Reservations personnelles : volume naturellement borne (un
+      // utilisateur n'a jamais des centaines de reservations), donc pas
+      // de controles de pagination ici - juste une page large pour ne
+      // rien tronquer, comme le tableau de bord admin.
+      .get("/bookings?per_page=100")
       .then((res) => {
         const all = res.data?.data ?? res.data ?? [];
         // Filter to current user's bookings only (defensive: API may already do this)

@@ -3,24 +3,28 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Pencil, Trash2, Plus, Eye, Film as FilmIcon } from 'lucide-react'
 import AdminLayout from '../../../components/AdminLayout'
 import PageHeader from '../../../components/PageHeader'
+import AdminPagination from '../../../components/AdminPagination'
 import api from '../../../api/axios'
 
 import { resolvePosterUrl } from '@/lib/storage'
 
 function FilmsList() {
     const [films, setFilms] = useState([])
+    const [meta, setMeta] = useState(null)
+    const [page, setPage] = useState(1)
     const [loading, setLoading] = useState(true)
     const navigate = useNavigate()
 
     useEffect(() => {
         const load = async () => {
             setLoading(true)
-            const res = await api.get('/films')
-            setFilms(res.data)
+            const res = await api.get(`/films?page=${page}`)
+            setFilms(res.data?.data ?? res.data ?? [])
+            setMeta(res.data?.meta ?? null)
             setLoading(false)
         }
         load()
-    }, [])
+    }, [page])
 
     const handleDelete = async (id) => {
         if (!confirm('Supprimer ce film ?')) return
@@ -163,6 +167,7 @@ function FilmsList() {
                             })
                         )}
                     </div>
+                    <AdminPagination meta={meta} onPageChange={setPage} />
                 </div>
             </div>
         </AdminLayout>

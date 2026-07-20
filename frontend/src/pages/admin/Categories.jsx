@@ -1,19 +1,23 @@
 import { useState, useEffect } from 'react'
 import AdminLayout from '../../components/AdminLayout'
 import PageHeader from '../../components/PageHeader'
+import AdminPagination from '../../components/AdminPagination'
 import api from '../../api/axios'
 import { Plus, Pencil, Trash2, X, AlertCircle, Tag } from 'lucide-react'
 
 function Categories() {
     const [categories, setCategories] = useState([])
+    const [meta, setMeta] = useState(null)
+    const [page, setPage] = useState(1)
     const [name, setName] = useState('')
     const [editId, setEditId] = useState(null)
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(true)
 
     const fetchCategories = async () => {
-        const res = await api.get('/categories')
-        setCategories(res.data)
+        const res = await api.get(`/categories?page=${page}`)
+        setCategories(res.data?.data ?? res.data ?? [])
+        setMeta(res.data?.meta ?? null)
     }
 
     useEffect(() => {
@@ -23,7 +27,7 @@ function Categories() {
             setLoading(false)
         }
         load()
-    }, [])
+    }, [page])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -173,6 +177,7 @@ function Categories() {
                             </div>
                         ))
                     )}
+                    <AdminPagination meta={meta} onPageChange={setPage} />
                 </div>
             </div>
         </AdminLayout>

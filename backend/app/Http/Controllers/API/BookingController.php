@@ -13,21 +13,25 @@ use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         /** @var User $user */
         $user = Auth::user();
+        $perPage = min(max((int) $request->query('per_page', 10), 1), 100);
 
         if ($user->isAdmin()) {
             return BookingResource::collection(
-                Booking::with(['user', 'screening.film', 'screening.room'])->get()
+                Booking::with(['user', 'screening.film', 'screening.room'])
+                    ->latest()
+                    ->paginate($perPage)
             );
         }
 
         return BookingResource::collection(
             Booking::with(['screening.film', 'screening.room'])
                 ->where('id_user', $user->id)
-                ->get()
+                ->latest()
+                ->paginate($perPage)
         );
     }
 

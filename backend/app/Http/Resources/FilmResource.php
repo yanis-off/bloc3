@@ -21,6 +21,7 @@ class FilmResource extends JsonResource
             'release_date' => $this->release_date,
             'trailer_url'  => $this->trailer_url,
             'status'       => $this->status,
+            'id_category'  => $this->id_category,
             'category'     => new CategoryResource($this->whenLoaded('category')),
         ];
     }

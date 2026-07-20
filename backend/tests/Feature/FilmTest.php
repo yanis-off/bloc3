@@ -21,7 +21,21 @@ class FilmTest extends TestCase
 
         $this->getJson('/api/films')
              ->assertStatus(200)
-             ->assertJsonCount(3);
+             ->assertJsonCount(3, 'data');
+    }
+
+    public function test_films_list_is_paginated(): void
+    {
+        // Regression P1-10 : /api/films doit etre pagine (payload borne
+        // meme si le catalogue grandit), avec les metadonnees exposees.
+        Film::factory()->count(20)->create();
+
+        $response = $this->getJson('/api/films?per_page=5')
+                         ->assertStatus(200);
+
+        $this->assertCount(5, $response->json('data'));
+        $this->assertSame(20, $response->json('meta.total'));
+        $this->assertSame(4, $response->json('meta.last_page'));
     }
 
     public function test_anyone_can_view_a_single_film(): void

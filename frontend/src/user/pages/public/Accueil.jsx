@@ -57,7 +57,11 @@ function AccueilContent() {
     // list). If your status values aren't exactly "showing" / "coming_soon",
     // update the two checks below to match.
     api
-      .get("/films")
+      // per_page=100 : l'accueil est une vitrine (À l'affiche / À venir),
+      // pas un catalogue pagine avec des controles "page suivante" - on
+      // demande donc une page large pour ne pas tronquer silencieusement
+      // les sections si le catalogue depasse le defaut de 15.
+      .get("/films?per_page=100")
       .then((res) => {
         const films = res.data?.data ?? res.data ?? [];
         if (!films.length) return;
@@ -77,7 +81,7 @@ function AccueilContent() {
       .catch(() => { });
 
     api
-      .get("/categories")
+      .get("/categories?per_page=100")
       .then((res) => {
         const cats = res.data?.data ?? res.data ?? [];
         if (cats.length) setCategories(["Tous", ...cats.map((c) => c.name)]);

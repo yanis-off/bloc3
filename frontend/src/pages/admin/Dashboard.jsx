@@ -108,9 +108,12 @@ export default function Dashboard() {
     const [bookings, setBookings] = useState(null)
 
     useEffect(() => {
-        api.get('/films').then(r => setFilms(r.data)).catch(() => setFilms([]))
-        api.get('/screenings').then(r => setScreenings(r.data)).catch(() => setScreenings([]))
-        api.get('/bookings').then(r => setBookings(r.data)).catch(() => setBookings([]))
+        // Vue admin interne peu frequente : on demande une page large pour
+        // calculer des totaux exacts (pas de pagination UI necessaire ici,
+        // contrairement aux listes de gestion Films/Reservations/Salles).
+        api.get('/films?per_page=1000').then(r => setFilms(r.data?.data ?? r.data ?? [])).catch(() => setFilms([]))
+        api.get('/screenings?per_page=1000').then(r => setScreenings(r.data?.data ?? r.data ?? [])).catch(() => setScreenings([]))
+        api.get('/bookings?per_page=1000').then(r => setBookings(r.data?.data ?? r.data ?? [])).catch(() => setBookings([]))
     }, [])
 
     // derived stats

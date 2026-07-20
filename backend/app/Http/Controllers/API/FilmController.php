@@ -9,10 +9,12 @@ use Illuminate\Http\Request;
 
 class FilmController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $perPage = min(max((int) $request->query('per_page', 10), 1), 100);
+
         return FilmResource::collection(
-            Film::with('category')->get()
+            Film::with('category')->paginate($perPage)
         );
     }
 

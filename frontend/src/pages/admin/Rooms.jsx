@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
 import AdminLayout from '../../components/AdminLayout'
 import PageHeader from '../../components/PageHeader'
+import AdminPagination from '../../components/AdminPagination'
 import api from '../../api/axios'
 import { Plus, Pencil, Trash2, X, AlertCircle, DoorOpen, ChevronDown } from 'lucide-react'
 
 function Rooms() {
     const [rooms, setRooms] = useState([])
+    const [meta, setMeta] = useState(null)
+    const [page, setPage] = useState(1)
     const [name, setName] = useState('')
     const [capacity, setCapacity] = useState('')
     const [format, setFormat] = useState('standard')
@@ -15,8 +18,9 @@ function Rooms() {
     const [loading, setLoading] = useState(true)
 
     const fetchRooms = async () => {
-        const res = await api.get('/rooms')
-        setRooms(res.data)
+        const res = await api.get(`/rooms?page=${page}`)
+        setRooms(res.data?.data ?? res.data ?? [])
+        setMeta(res.data?.meta ?? null)
     }
 
     useEffect(() => {
@@ -31,7 +35,7 @@ function Rooms() {
             }
         }
         load()
-    }, [])
+    }, [page])
 
     const resetForm = () => {
         setEditId(null)
@@ -282,6 +286,7 @@ function Rooms() {
                             })
                         )}
                     </div>
+                    <AdminPagination meta={meta} onPageChange={setPage} />
                 </div>
             </div>
         </AdminLayout>

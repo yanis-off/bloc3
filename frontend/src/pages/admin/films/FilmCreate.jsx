@@ -4,7 +4,6 @@ import { Film, ChevronDown, AlertCircle, X, Check } from 'lucide-react'
 import AdminLayout from '../../../components/AdminLayout'
 import PageHeader from '../../../components/PageHeader'
 import FormField from '../../../components/FormField'
-import PosterUpload from '../../../components/PosterUpload'
 import api from '../../../api/axios'
 
 function FilmCreate() {
@@ -18,8 +17,8 @@ function FilmCreate() {
 
     useEffect(() => {
         const load = async () => {
-            const res = await api.get('/categories')
-            setCategories(res.data)
+            const res = await api.get('/categories?per_page=100')
+            setCategories(res.data?.data ?? res.data ?? [])
         }
         load()
     }, [])
@@ -32,7 +31,15 @@ function FilmCreate() {
         e.preventDefault()
         setError('')
         try {
-            await api.post('/films', form)
+            // nullable|url cote backend n'accepte pas une chaine vide comme
+            // "absente" (seul null l'est) : on convertit donc '' en null
+            // pour les champs URL optionnels avant l'envoi.
+            const payload = {
+                ...form,
+                poster: form.poster || null,
+                trailer_url: form.trailer_url || null,
+            }
+            await api.post('/films', payload)
             navigate('/admin/films')
         } catch (err) {
             setError(err.response?.data?.message || 'Erreur.')
@@ -118,8 +125,39 @@ function FilmCreate() {
                             <textarea name="synopsis" value={form.synopsis} onChange={handleChange} rows={4} className={`${inputClass} resize-none`} style={inputStyle} />
                         </FormField>
 
-                        <FormField label="Affiche" className="sm:col-span-2">
-                            <PosterUpload currentPoster={form.poster} onChange={(url) => setForm({ ...form, poster: url })} />
+                        <FormField
+                            label="Affiche (URL)"
+                            className="sm:col-span-2"
+                            hint="Lien direct vers une image (ex. https://picsum.photos/...)"
+                        >
+                            <div className="flex items-center gap-4">
+                                {form.poster ? (
+                                    <img
+                                        src={form.poster}
+                                        alt="Aperçu de l'affiche"
+                                        className="h-24 w-16 shrink-0 rounded-md object-cover"
+                                        style={{ border: '1px solid var(--admin-border)' }}
+                                        onError={(e) => { e.currentTarget.style.visibility = 'hidden' }}
+                                        onLoad={(e) => { e.currentTarget.style.visibility = 'visible' }}
+                                    />
+                                ) : (
+                                    <div
+                                        className="flex h-24 w-16 shrink-0 items-center justify-center rounded-md text-[10px]"
+                                        style={{ backgroundColor: 'var(--admin-surface2)', border: '1px solid var(--admin-border)', color: 'var(--admin-muted)' }}
+                                    >
+                                        Aucune
+                                    </div>
+                                )}
+                                <input
+                                    name="poster"
+                                    type="url"
+                                    value={form.poster}
+                                    onChange={handleChange}
+                                    placeholder="https://..."
+                                    className={`${inputClass} flex-1`}
+                                    style={inputStyle}
+                                />
+                            </div>
                         </FormField>
                     </div>
 

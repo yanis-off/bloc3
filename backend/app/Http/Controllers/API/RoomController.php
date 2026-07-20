@@ -9,9 +9,11 @@ use Illuminate\Http\Request;
 
 class RoomController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return RoomResource::collection(Room::all());
+        $perPage = min(max((int) $request->query('per_page', 10), 1), 100);
+
+        return RoomResource::collection(Room::paginate($perPage));
     }
 
     public function store(Request $request)

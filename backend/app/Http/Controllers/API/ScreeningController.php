@@ -9,10 +9,21 @@ use Illuminate\Http\Request;
 
 class ScreeningController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $perPage = min(max((int) $request->query('per_page', 10), 1), 100);
+
+        $query = Screening::with(['film', 'room']);
+
+        // Filtre optionnel : utilise par FilmDetail.jsx pour ne recuperer
+        // que les seances du film consulte, plutot que de tout charger
+        // puis filtrer cote client.
+        if ($request->filled('id_film')) {
+            $query->where('id_film', $request->query('id_film'));
+        }
+
         return ScreeningResource::collection(
-            Screening::with(['film', 'room'])->get()
+            $query->orderBy('date')->orderBy('time')->paginate($perPage)
         );
     }
 

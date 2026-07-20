@@ -40,7 +40,21 @@ class RoomTest extends TestCase
         $this->actingAs($admin, 'sanctum')
              ->getJson('/api/rooms')
              ->assertStatus(200)
-             ->assertJsonCount(3);
+             ->assertJsonCount(3, 'data');
+    }
+
+    public function test_rooms_list_is_paginated(): void
+    {
+        // Regression P1-10 : /api/rooms doit etre pagine.
+        $admin = User::factory()->create(['role' => 'admin']);
+        Room::factory()->count(20)->create();
+
+        $response = $this->actingAs($admin, 'sanctum')
+                         ->getJson('/api/rooms?per_page=5')
+                         ->assertStatus(200);
+
+        $this->assertCount(5, $response->json('data'));
+        $this->assertSame(20, $response->json('meta.total'));
     }
 
     public function test_admin_can_create_a_room(): void

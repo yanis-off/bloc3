@@ -17,7 +17,19 @@ class CategoryTest extends TestCase
 
         $this->getJson('/api/categories')
              ->assertStatus(200)
-             ->assertJsonCount(4);
+             ->assertJsonCount(4, 'data');
+    }
+
+    public function test_categories_list_is_paginated(): void
+    {
+        // Regression P1-10 : /api/categories doit etre pagine.
+        Category::factory()->count(15)->create();
+
+        $response = $this->getJson('/api/categories?per_page=5')
+                         ->assertStatus(200);
+
+        $this->assertCount(5, $response->json('data'));
+        $this->assertSame(15, $response->json('meta.total'));
     }
 
     public function test_admin_can_create_a_category(): void

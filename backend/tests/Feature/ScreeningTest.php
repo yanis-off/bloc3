@@ -21,7 +21,32 @@ class ScreeningTest extends TestCase
 
         $this->getJson('/api/screenings')
              ->assertStatus(200)
-             ->assertJsonCount(3);
+             ->assertJsonCount(3, 'data');
+    }
+
+    public function test_screenings_list_is_paginated(): void
+    {
+        // Regression P1-10 : /api/screenings doit etre pagine.
+        Screening::factory()->count(15)->create();
+
+        $response = $this->getJson('/api/screenings?per_page=5')
+                         ->assertStatus(200);
+
+        $this->assertCount(5, $response->json('data'));
+        $this->assertSame(15, $response->json('meta.total'));
+    }
+
+    public function test_screenings_can_be_filtered_by_film(): void
+    {
+        $film1 = Film::factory()->create();
+        $film2 = Film::factory()->create();
+        Screening::factory()->count(2)->create(['id_film' => $film1->id_film]);
+        Screening::factory()->count(3)->create(['id_film' => $film2->id_film]);
+
+        $response = $this->getJson("/api/screenings?id_film={$film1->id_film}")
+                         ->assertStatus(200);
+
+        $this->assertCount(2, $response->json('data'));
     }
 
     public function test_anyone_can_view_a_single_screening(): void

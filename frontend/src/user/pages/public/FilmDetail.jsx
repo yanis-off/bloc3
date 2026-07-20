@@ -49,14 +49,13 @@ function FilmDetailContent() {
       })
       .catch(() => {});
 
-    // No endpoint for "screenings of a single film" was confirmed, so we
-    // fetch everything and filter client-side — same defensive pattern as
-    // the homepage's status split.
+    // Filtre desormais fait cote serveur (?id_film=) plutot que de tout
+    // charger et filtrer cote client - evite de recuperer les seances de
+    // tous les autres films pour n'afficher que celles de celui-ci.
     api
-      .get("/screenings")
+      .get(`/screenings?id_film=${id}&per_page=100`)
       .then((res) => {
-        const all = res.data?.data ?? res.data ?? [];
-        const forFilm = all.filter((s) => String(s.id_film) === String(id));
+        const forFilm = res.data?.data ?? res.data ?? [];
         if (forFilm.length) setScreenings(forFilm);
       })
       .catch(() => {});

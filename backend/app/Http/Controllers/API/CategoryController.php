@@ -9,9 +9,11 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return CategoryResource::collection(Category::all());
+        $perPage = min(max((int) $request->query('per_page', 10), 1), 100);
+
+        return CategoryResource::collection(Category::paginate($perPage));
     }
 
     public function store(Request $request)

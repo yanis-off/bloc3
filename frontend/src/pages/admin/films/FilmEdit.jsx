@@ -4,7 +4,6 @@ import { Film, ChevronDown, AlertCircle, X, Check } from 'lucide-react'
 import AdminLayout from '../../../components/AdminLayout'
 import PageHeader from '../../../components/PageHeader'
 import FormField from '../../../components/FormField'
-import PosterUpload from '../../../components/PosterUpload'
 import api from '../../../api/axios'
 
 function FilmEdit() {
@@ -21,7 +20,7 @@ function FilmEdit() {
         const load = async () => {
             const [filmRes, catsRes] = await Promise.all([
                 api.get(`/films/${id}`),
-                api.get('/categories')
+                api.get('/categories?per_page=100')
             ])
             const film = filmRes.data
             setForm({
@@ -36,7 +35,7 @@ function FilmEdit() {
                 id_category: film.id_category || '',
                 poster: film.poster || ''
             })
-            setCategories(catsRes.data)
+            setCategories(catsRes.data?.data ?? catsRes.data ?? [])
         }
         load()
     }, [id])
@@ -49,7 +48,12 @@ function FilmEdit() {
         e.preventDefault()
         setError('')
         try {
-            await api.put(`/films/${id}`, form)
+            const payload = {
+                ...form,
+                poster: form.poster || null,
+                trailer_url: form.trailer_url || null,
+            }
+            await api.put(`/films/${id}`, payload)
             navigate('/admin/films')
         } catch (err) {
             setError(err.response?.data?.message || 'Erreur.')
@@ -135,8 +139,39 @@ function FilmEdit() {
                             <textarea name="synopsis" value={form.synopsis} onChange={handleChange} rows={4} className={`${inputClass} resize-none`} style={inputStyle} />
                         </FormField>
 
-                        <FormField label="Affiche" className="sm:col-span-2">
-                            <PosterUpload currentPoster={form.poster} onChange={(url) => setForm({ ...form, poster: url })} />
+                        <FormField
+                            label="Affiche (URL)"
+                            className="sm:col-span-2"
+                            hint="Lien direct vers une image (ex. https://picsum.photos/...)"
+                        >
+                            <div className="flex items-center gap-4">
+                                {form.poster ? (
+                                    <img
+                                        src={form.poster}
+                                        alt="Aperçu de l'affiche"
+                                        className="h-24 w-16 shrink-0 rounded-md object-cover"
+                                        style={{ border: '1px solid var(--admin-border)' }}
+                                        onError={(e) => { e.currentTarget.style.visibility = 'hidden' }}
+                                        onLoad={(e) => { e.currentTarget.style.visibility = 'visible' }}
+                                    />
+                                ) : (
+                                    <div
+                                        className="flex h-24 w-16 shrink-0 items-center justify-center rounded-md text-[10px]"
+                                        style={{ backgroundColor: 'var(--admin-surface2)', border: '1px solid var(--admin-border)', color: 'var(--admin-muted)' }}
+                                    >
+                                        Aucune
+                                    </div>
+                                )}
+                                <input
+                                    name="poster"
+                                    type="url"
+                                    value={form.poster}
+                                    onChange={handleChange}
+                                    placeholder="https://..."
+                                    className={`${inputClass} flex-1`}
+                                    style={inputStyle}
+                                />
+                            </div>
                         </FormField>
                     </div>
 

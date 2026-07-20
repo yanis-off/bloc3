@@ -3,21 +3,25 @@ import { Link } from 'react-router-dom'
 import { Pencil, Trash2, Plus, CalendarClock } from 'lucide-react'
 import AdminLayout from '../../../components/AdminLayout'
 import PageHeader from '../../../components/PageHeader'
+import AdminPagination from '../../../components/AdminPagination'
 import api from '../../../api/axios'
 
 function ScreeningsList() {
     const [screenings, setScreenings] = useState([])
+    const [meta, setMeta] = useState(null)
+    const [page, setPage] = useState(1)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         const load = async () => {
             setLoading(true)
-            const res = await api.get('/screenings')
-            setScreenings(res.data)
+            const res = await api.get(`/screenings?page=${page}`)
+            setScreenings(res.data?.data ?? res.data ?? [])
+            setMeta(res.data?.meta ?? null)
             setLoading(false)
         }
         load()
-    }, [])
+    }, [page])
 
     const handleDelete = async (id) => {
         if (!confirm('Supprimer cette séance ?')) return
@@ -128,6 +132,7 @@ function ScreeningsList() {
                             })
                         )}
                     </div>
+                    <AdminPagination meta={meta} onPageChange={setPage} />
                 </div>
             </div>
         </AdminLayout>
