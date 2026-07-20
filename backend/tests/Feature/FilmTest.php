@@ -164,7 +164,7 @@ class FilmTest extends TestCase
 
         $films = $this->getJson('/api/films')
                       ->assertStatus(200)
-                      ->json();
+                      ->json('data');
 
         $statuses = collect($films)->pluck('status')->unique()->sort()->values()->toArray();
         $this->assertContains('showing', $statuses);
