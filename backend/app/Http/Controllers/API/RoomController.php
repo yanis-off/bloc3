@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Room\StoreRoomRequest;
+use App\Http\Requests\Room\UpdateRoomRequest;
 use App\Http\Resources\RoomResource;
 use App\Models\Room;
 use Illuminate\Http\Request;
@@ -16,16 +18,9 @@ class RoomController extends Controller
         return RoomResource::collection(Room::paginate($perPage));
     }
 
-    public function store(Request $request)
+    public function store(StoreRoomRequest $request)
     {
-        $validated = $request->validate([
-            'name'     => 'required|string|max:100|unique:rooms,name',
-            'capacity' => 'required|integer|min:1',
-            'format' => 'required|in:standard,imax,vip',
-            'price'  => 'required|numeric|min:0',
-        ]);
-
-        $room = Room::create($validated);
+        $room = Room::create($request->validated());
 
         return (new RoomResource($room))
             ->response()
@@ -37,16 +32,9 @@ class RoomController extends Controller
         return new RoomResource($room);
     }
 
-    public function update(Request $request, Room $room)
+    public function update(UpdateRoomRequest $request, Room $room)
     {
-        $validated = $request->validate([
-            'name'     => 'required|string|max:100|unique:rooms,name,' . $room->id_room . ',id_room',
-            'capacity' => 'required|integer|min:1',
-            'format' => 'required|in:standard,imax,vip',
-            'price'  => 'required|numeric|min:0',
-        ]);
-
-        $room->update($validated);
+        $room->update($request->validated());
 
         return new RoomResource($room);
     }

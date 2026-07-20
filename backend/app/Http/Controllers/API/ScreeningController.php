@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Screening\StoreScreeningRequest;
+use App\Http\Requests\Screening\UpdateScreeningRequest;
 use App\Http\Resources\ScreeningResource;
 use App\Models\Screening;
 use Illuminate\Http\Request;
@@ -27,17 +29,9 @@ class ScreeningController extends Controller
         );
     }
 
-    public function store(Request $request)
+    public function store(StoreScreeningRequest $request)
     {
-        $validated = $request->validate([
-            'date'            => 'required|date',
-            'time'            => 'required|date_format:H:i',
-            'seats_remaining' => 'required|integer|min:0',
-            'id_film'         => 'required|exists:films,id_film',
-            'id_room'         => 'required|exists:rooms,id_room',
-        ]);
-
-        $screening = Screening::create($validated);
+        $screening = Screening::create($request->validated());
 
         return (new ScreeningResource($screening->load(['film', 'room'])))
             ->response()
@@ -49,17 +43,9 @@ class ScreeningController extends Controller
         return new ScreeningResource($screening->load(['film', 'room']));
     }
 
-    public function update(Request $request, Screening $screening)
+    public function update(UpdateScreeningRequest $request, Screening $screening)
     {
-        $validated = $request->validate([
-            'date'            => 'required|date',
-            'time'            => 'required|date_format:H:i',
-            'seats_remaining' => 'required|integer|min:0',
-            'id_film'         => 'required|exists:films,id_film',
-            'id_room'         => 'required|exists:rooms,id_room',
-        ]);
-
-        $screening->update($validated);
+        $screening->update($request->validated());
 
         return new ScreeningResource($screening->load(['film', 'room']));
     }

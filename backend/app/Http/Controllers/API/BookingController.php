@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Booking\StoreBookingRequest;
+use App\Http\Requests\Booking\UpdateBookingRequest;
 use App\Http\Resources\BookingResource;
 use App\Models\Booking;
 use App\Models\Screening;
@@ -35,12 +37,9 @@ class BookingController extends Controller
         );
     }
 
-    public function store(Request $request)
+    public function store(StoreBookingRequest $request)
     {
-        $validated = $request->validate([
-            'seats_count'  => 'required|integer|min:1',
-            'id_screening' => 'required|exists:screenings,id_screening',
-        ]);
+        $validated = $request->validated();
 
         return DB::transaction(function () use ($validated) {
             $screening = Screening::where('id_screening', $validated['id_screening'])
@@ -90,11 +89,9 @@ class BookingController extends Controller
         return new BookingResource($booking->load(['screening.film', 'screening.room']));
     }
 
-    public function update(Request $request, Booking $booking)
+    public function update(UpdateBookingRequest $request, Booking $booking)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:pending,confirmed,expired,cancelled',
-        ]);
+        $validated = $request->validated();
 
         $oldStatus = $booking->status;
         $booking->update($validated);

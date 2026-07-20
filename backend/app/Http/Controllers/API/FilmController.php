@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Film\StoreFilmRequest;
+use App\Http\Requests\Film\UpdateFilmRequest;
 use App\Http\Resources\FilmResource;
 use App\Models\Film;
 use Illuminate\Http\Request;
@@ -18,22 +20,9 @@ class FilmController extends Controller
         );
     }
 
-    public function store(Request $request)
+    public function store(StoreFilmRequest $request)
     {
-        $validated = $request->validate([
-            'title'        => 'required|string|max:255',
-            'synopsis'     => 'nullable|string',
-            'duration_min' => 'nullable|integer|min:1',
-            'poster'       => 'nullable|url|max:2048',
-            'actors'       => 'nullable|string',
-            'director' => 'nullable|string|max:255',
-            'release_date' => 'nullable|date',
-            'status'       => 'required|in:showing,coming_soon',
-            'id_category'  => 'nullable|exists:categories,id_category',
-            'trailer_url' => 'nullable|url|max:500',
-        ]);
-
-        $film = Film::create($validated);
+        $film = Film::create($request->validated());
 
         return (new FilmResource($film->load('category')))
             ->response()
@@ -45,22 +34,9 @@ class FilmController extends Controller
         return new FilmResource($film->load('category'));
     }
 
-    public function update(Request $request, Film $film)
+    public function update(UpdateFilmRequest $request, Film $film)
     {
-        $validated = $request->validate([
-            'title'        => 'required|string|max:255',
-            'synopsis'     => 'nullable|string',
-            'duration_min' => 'nullable|integer|min:1',
-            'poster'       => 'nullable|url|max:2048',
-            'actors'       => 'nullable|string',
-            'director' => 'nullable|string|max:255',
-            'release_date' => 'nullable|date',
-            'status'       => 'required|in:showing,coming_soon',
-            'id_category'  => 'nullable|exists:categories,id_category',
-            'trailer_url' => 'nullable|url|max:500',
-        ]);
-
-        $film->update($validated);
+        $film->update($request->validated());
 
         return new FilmResource($film->load('category'));
     }

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Category\StoreCategoryRequest;
+use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Http\Request;
@@ -16,13 +18,9 @@ class CategoryController extends Controller
         return CategoryResource::collection(Category::paginate($perPage));
     }
 
-    public function store(Request $request)
+    public function store(StoreCategoryRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:100|unique:categories,name',
-        ]);
-
-        $category = Category::create($validated);
+        $category = Category::create($request->validated());
 
         return (new CategoryResource($category))
             ->response()
@@ -34,13 +32,9 @@ class CategoryController extends Controller
         return new CategoryResource($category);
     }
 
-    public function update(Request $request, Category $category)
+    public function update(UpdateCategoryRequest $request, Category $category)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:100|unique:categories,name,' . $category->id_category . ',id_category',
-        ]);
-
-        $category->update($validated);
+        $category->update($request->validated());
 
         return new CategoryResource($category);
     }
